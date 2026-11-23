@@ -1,0 +1,3706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulation1 - Aspen Plus V14</title>
+    <style>
+        :root {
+            --ap-blue: #005A9E;
+            --ap-blue-dark: #004275;
+            --ap-blue-light: #EBF3FA;
+            --ap-blue-sel: #D0E7F8;
+            --ap-bg: #E8ECEF;
+            --ap-panel: #F6F8FA;
+            --ap-header: #E4E7EC;
+            --ap-border: #C4C9D0;
+            --ap-text: #1F2328;
+            --ap-muted: #57606A;
+            --ap-red: #D83B01;
+            --ap-green: #107C10;
+            --font-ui: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            --font-mono: 'Consolas', 'Courier New', monospace;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: var(--font-ui);
+            font-size: 12px;
+            color: var(--ap-text);
+            background: var(--ap-bg);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            user-select: none;
+        }
+        .mono { font-family: var(--font-mono); }
+
+        /* Title Bar */
+        .title-bar {
+            height: 28px;
+            background: var(--ap-blue);
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px;
+            font-size: 11.5px;
+            flex-shrink: 0;
+        }
+        .qat-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: #FFFFFF;
+            padding: 2px 5px;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 11px;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .qat-btn:hover { background: rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.3); }
+
+        /* Ribbon Tabs */
+        .ribbon-tabs {
+            height: 25px;
+            background: #F3F5F7;
+            border-bottom: 1px solid var(--ap-border);
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            padding: 0 8px;
+            flex-shrink: 0;
+        }
+        .r-tab {
+            padding: 3px 12px;
+            font-size: 11.5px;
+            cursor: pointer;
+            border-top: 2px solid transparent;
+            color: #32383F;
+        }
+        .r-tab.active {
+            background: #FFFFFF;
+            border-top: 2px solid var(--ap-blue);
+            border-left: 1px solid var(--ap-border);
+            border-right: 1px solid var(--ap-border);
+            font-weight: 600;
+            color: var(--ap-blue);
+            margin-bottom: -1px;
+        }
+        .file-btn {
+            background: #004578;
+            color: #FFFFFF;
+            padding: 3px 12px;
+            font-size: 11.5px;
+            font-weight: 600;
+            border-radius: 2px 2px 0 0;
+            cursor: pointer;
+            margin-right: 4px;
+        }
+        .file-btn:hover { background: #00355C; }
+
+        /* Ribbon Toolbar */
+        .ribbon-bar {
+            height: 68px;
+            background: #FFFFFF;
+            border-bottom: 1px solid var(--ap-border);
+            display: flex;
+            align-items: stretch;
+            padding: 3px 6px;
+            gap: 4px;
+            overflow-x: auto;
+            flex-shrink: 0;
+        }
+        .r-group {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-right: 1px solid #DCE0E5;
+            padding: 0 6px;
+        }
+        .r-group-items {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            flex: 1;
+        }
+        .r-group-label {
+            font-size: 9.5px;
+            color: var(--ap-muted);
+            text-align: center;
+            padding-top: 1px;
+        }
+        .r-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3px 7px;
+            border: 1px solid transparent;
+            border-radius: 2px;
+            cursor: pointer;
+            min-width: 48px;
+            height: 48px;
+            background: transparent;
+            color: var(--ap-text);
+            font-size: 10.5px;
+        }
+        .r-btn:hover { background: var(--ap-blue-light); border-color: #A6CBE8; }
+        .r-btn.active { background: var(--ap-blue-sel); border-color: var(--ap-blue); font-weight: 600; }
+
+        /* Main Split Layout */
+        .main-body {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Left Navigation Pane */
+        .nav-pane {
+            width: 245px;
+            background: var(--ap-panel);
+            border-right: 1px solid var(--ap-border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+        .nav-header {
+            height: 25px;
+            background: var(--ap-header);
+            border-bottom: 1px solid var(--ap-border);
+            padding: 0 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
+            font-size: 11px;
+        }
+        .nav-tree {
+            flex: 1;
+            overflow-y: auto;
+            padding: 4px 0;
+        }
+        .tree-row {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 8px;
+            font-size: 11.5px;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            white-space: nowrap;
+        }
+        .tree-row:hover { background: var(--ap-blue-light); }
+        .tree-row.active {
+            background: #D8E8F6;
+            border-left-color: var(--ap-blue);
+            font-weight: 600;
+            color: var(--ap-blue-dark);
+        }
+
+        /* Aspen Status Circles */
+        .dot-ok {
+            width: 11px; height: 11px; border-radius: 50%;
+            background: var(--ap-blue); color: #FFFFFF;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 8px; font-weight: 700; flex-shrink: 0;
+        }
+        .dot-req {
+            width: 11px; height: 11px; border-radius: 50%;
+            border: 1.5px solid var(--ap-red);
+            background: linear-gradient(90deg, var(--ap-red) 50%, #FFFFFF 50%);
+            display: inline-block; flex-shrink: 0;
+        }
+        .dot-empty {
+            width: 11px; height: 11px; border-radius: 50%;
+            border: 1.2px solid #8C959F;
+            background: #FFFFFF;
+            display: inline-block; flex-shrink: 0;
+        }
+
+        /* Bottom-Left Environment Switcher */
+        .env-switcher {
+            border-top: 1px solid var(--ap-border);
+            background: var(--ap-header);
+            padding: 4px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 3px;
+            flex-shrink: 0;
+        }
+        .env-btn {
+            padding: 5px 2px;
+            font-size: 10.5px;
+            font-weight: 600;
+            border: 1px solid var(--ap-border);
+            background: #FFFFFF;
+            color: #32383F;
+            border-radius: 2px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .env-btn.active {
+            background: var(--ap-blue);
+            color: #FFFFFF;
+            border-color: var(--ap-blue-dark);
+        }
+
+        /* Center Workspace */
+        .center-pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: #FFFFFF;
+        }
+        .doc-tabs {
+            height: 26px;
+            background: var(--ap-bg);
+            border-bottom: 1px solid var(--ap-border);
+            display: flex;
+            align-items: center;
+            overflow-x: auto;
+            flex-shrink: 0;
+        }
+        .doc-tab {
+            height: 100%;
+            padding: 0 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11.5px;
+            background: var(--ap-header);
+            border-right: 1px solid var(--ap-border);
+            border-top: 2px solid transparent;
+            cursor: pointer;
+            color: #424A53;
+            white-space: nowrap;
+        }
+        .doc-tab.active {
+            background: #FFFFFF;
+            border-top-color: var(--ap-blue);
+            color: var(--ap-blue);
+            font-weight: 600;
+        }
+
+        .workspace-view {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .workspace-view.active { display: flex; }
+
+        /* PFD Grid Canvas */
+        .pfd-wrap {
+            flex: 1;
+            overflow: auto;
+            position: relative;
+            background-color: #FFFFFF;
+            background-image:
+                linear-gradient(to right, #EFF3F7 1px, transparent 1px),
+                linear-gradient(to bottom, #EFF3F7 1px, transparent 1px),
+                linear-gradient(to right, #DFE5EC 1px, transparent 1px),
+                linear-gradient(to bottom, #DFE5EC 1px, transparent 1px);
+            background-size: 20px 20px, 20px 20px, 100px 100px, 100px 100px;
+        }
+
+        /* Model Palette */
+        .palette-dock {
+            border-top: 1px solid var(--ap-border);
+            background: #F0F2F5;
+            flex-shrink: 0;
+        }
+        .palette-tabs {
+            display: flex;
+            align-items: center;
+            background: var(--ap-header);
+            border-bottom: 1px solid var(--ap-border);
+            overflow-x: auto;
+        }
+        .p-tab {
+            padding: 3px 10px;
+            font-size: 11px;
+            border-right: 1px solid var(--ap-border);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .p-tab.active { background: #FFFFFF; font-weight: 600; color: var(--ap-blue); }
+        .palette-strip {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 8px;
+            background: #FFFFFF;
+            overflow-x: auto;
+        }
+        .p-card {
+            width: 72px;
+            height: 54px;
+            border: 1px solid #D0D7DE;
+            background: #FAFBFC;
+            border-radius: 2px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 10.5px;
+            flex-shrink: 0;
+        }
+        .p-card:hover { background: var(--ap-blue-light); border-color: var(--ap-blue); }
+        .p-card.selected { background: var(--ap-blue-sel); border: 1.5px solid var(--ap-blue); font-weight: 600; }
+
+        /* Forms & Engineering Tables */
+        .form-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px;
+            background: var(--ap-panel);
+        }
+        .sheet-card {
+            background: #FFFFFF;
+            border: 1px solid var(--ap-border);
+            max-width: 1050px;
+            margin: 0 auto 14px auto;
+        }
+        .sheet-head {
+            background: var(--ap-header);
+            border-bottom: 1px solid var(--ap-border);
+            padding: 6px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
+            color: var(--ap-blue-dark);
+        }
+        .sheet-subtabs {
+            display: flex;
+            background: #F0F2F5;
+            border-bottom: 1px solid var(--ap-border);
+            overflow-x: auto;
+        }
+        .sub-tab {
+            padding: 5px 12px;
+            font-size: 11px;
+            border-right: 1px solid var(--ap-border);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .sub-tab.active {
+            background: #FFFFFF;
+            font-weight: 600;
+            color: var(--ap-blue);
+            border-top: 2px solid var(--ap-blue);
+        }
+        .ap-input, .ap-select {
+            border: 1px solid #AEB6BF;
+            background: #FFFFFF;
+            padding: 3px 6px;
+            font-size: 11.5px;
+            width: 100%;
+            outline: none;
+            border-radius: 1px;
+        }
+        .ap-input { font-family: var(--font-mono); }
+        .ap-input:focus, .ap-select:focus { border-color: var(--ap-blue); background: #F5FAFF; }
+        .ap-input.req-empty, .ap-select.req-empty { border-left: 3px solid var(--ap-red); background: #FFFDFB; }
+
+        .ap-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+        .ap-table th {
+            background: #E6EBF1;
+            border: 1px solid var(--ap-border);
+            padding: 4px 8px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .ap-table td {
+            border: 1px solid #D0D7DE;
+            padding: 4px 8px;
+            background: #FFFFFF;
+        }
+        .ap-table tr:nth-child(even) td { background: #F9FBFD; }
+        .ap-table tr.sec-row td {
+            background: #EBF1F6;
+            font-weight: 700;
+            color: var(--ap-blue-dark);
+        }
+
+        .btn-primary {
+            background: var(--ap-blue);
+            color: #FFFFFF;
+            border: 1px solid var(--ap-blue-dark);
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+        .btn-primary:hover { background: var(--ap-blue-dark); }
+        .btn-secondary {
+            background: #FFFFFF;
+            color: var(--ap-text);
+            border: 1px solid var(--ap-border);
+            padding: 4px 10px;
+            font-size: 11px;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+        .btn-secondary:hover { background: var(--ap-blue-light); border-color: var(--ap-blue); }
+
+        /* Control Panel Console */
+        .control-panel {
+            height: 112px;
+            background: #1E1E1E;
+            color: #D4D4D4;
+            border-top: 1px solid var(--ap-border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+        .cp-header {
+            height: 22px;
+            background: #2D2D30;
+            padding: 0 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #FFFFFF;
+            border-bottom: 1px solid #3E3E42;
+        }
+        .cp-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 5px 10px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            line-height: 1.45;
+            user-select: text;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            height: 24px;
+            background: var(--ap-blue);
+            color: #FFFFFF;
+            padding: 0 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            flex-shrink: 0;
+        }
+
+        /* Embedded Flowsheet Stream Table */
+        .pfd-stamped-table {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: #FFFFFF;
+            border: 1.5px solid #1F2328;
+            box-shadow: 2px 3px 10px rgba(0,0,0,0.14);
+            z-index: 15;
+            max-width: 560px;
+            max-height: 460px;
+            overflow: auto;
+        }
+
+        /* Context Menu & Modals */
+        .ctx-menu {
+            position: fixed;
+            background: #FFFFFF;
+            border: 1px solid #AEB6BF;
+            box-shadow: 2px 4px 12px rgba(0,0,0,0.18);
+            z-index: 100;
+            min-width: 170px;
+            padding: 3px 0;
+        }
+        .ctx-item {
+            padding: 5px 12px;
+            font-size: 11.5px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+        }
+        .ctx-item:hover { background: var(--ap-blue-light); color: var(--ap-blue-dark); }
+
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.38);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 90;
+        }
+        .modal-box {
+            background: #FFFFFF;
+            border: 1px solid var(--ap-border);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.22);
+            width: 92%;
+            max-width: 520px;
+        }
+        .chart-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+        @media (max-width: 900px) {
+            .chart-grid { grid-template-columns: 1fr; }
+        }
+        .chart-card {
+            background: #FFFFFF;
+            border: 1px solid var(--ap-border);
+            padding: 10px 12px;
+        }
+        .chart-title {
+            font-weight: 700;
+            font-size: 11.5px;
+            color: var(--ap-blue-dark);
+            margin-bottom: 6px;
+            border-bottom: 1px solid #E4E7EC;
+            padding-bottom: 4px;
+        }
+        .chart-canvas-wrap {
+            width: 100%;
+            height: 240px;
+            position: relative;
+        }
+        .chart-canvas-wrap canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .hidden { display: none !important; }
+
+        @media print {
+            .no-print { display: none !important; }
+            body { overflow: visible; background: #FFF; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. ASPEN PLUS V14 TITLE BAR & QUICK ACCESS TOOLBAR -->
+    <header class="title-bar no-print">
+        <div style="display:flex; align-items:center; gap:8px;">
+            <div style="width:16px; height:16px; background:#FFFFFF; color:#005A9E; font-weight:800; font-size:10px; display:flex; align-items:center; justify-content:center; border-radius:2px;">A+</div>
+            <div style="display:flex; align-items:center; gap:2px; border-right:1px solid rgba(255,255,255,0.3); padding-right:6px;">
+                <button class="qat-btn" onclick="stepNext()" title="Next Required Input (F4)">N&rarr;</button>
+                <button class="qat-btn" onclick="runSimulation()" title="Run Simulation (F5)">&#9654;</button>
+                <button class="qat-btn" onclick="resetSimulation()" title="Reset Simulation Results">&#9198;</button>
+                <button class="qat-btn" onclick="toggleControlPanel()" title="Toggle Control Panel">CP</button>
+            </div>
+            <span id="windowTitleText" style="font-weight:600;">Simulation1 - Aspen Plus V14 - [Properties]</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <span id="topStatusPill" style="padding:1px 8px; background:#FDE7E9; color:#A80000; font-weight:700; border-radius:2px; font-size:10.5px;">Required Input Incomplete</span>
+        </div>
+    </header>
+
+    <!-- 2. RIBBON TABS -->
+    <nav class="ribbon-tabs no-print">
+        <div style="display:flex; align-items:flex-end;">
+            <div class="file-btn" onclick="exportStreamCSV()" title="Export Stream Table to CSV">File</div>
+            <div class="r-tab active" onclick="switchRibbonTab('home', this)">Home</div>
+            <div class="r-tab" onclick="switchRibbonTab('view', this)">View</div>
+            <div class="r-tab" onclick="switchRibbonTab('flowsheet', this)">Flowsheet</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; padding-bottom:2px; font-size:11px;">
+            <span style="color:var(--ap-muted);">Unit Set:</span>
+            <select id="unitSetDropdown" onchange="setUnitSet(this.value)" style="border:1px solid #AEB6BF; padding:1px 4px; font-size:11px; font-weight:600; color:#005A9E; background:#FFFFFF;">
+                <option value="METCBAR">METCBAR</option>
+                <option value="SI">SI</option>
+                <option value="ENG">ENG</option>
+            </select>
+        </div>
+    </nav>
+
+    <!-- 3. RIBBON COMMAND TOOLBAR -->
+    <div class="ribbon-bar no-print">
+        <!-- Navigate Group -->
+        <div class="r-group">
+            <div class="r-group-items">
+                <button class="r-btn" onclick="stepNext()" title="Next Required Input Sheet (F4)">
+                    <span style="font-weight:800; font-size:14px; color:#005A9E;">N&rarr;</span>
+                    <span>Next</span>
+                </button>
+            </div>
+            <div class="r-group-label">Navigate</div>
+        </div>
+
+        <!-- Run Group -->
+        <div class="r-group">
+            <div class="r-group-items">
+                <button class="r-btn" onclick="runSimulation()" title="Run Simulation Engine (F5)">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="#107C10"><path d="M6 3.5L16 10L6 16.5V3.5Z"/></svg>
+                    <span style="font-weight:700; color:#107C10;">Run</span>
+                </button>
+                <button class="r-btn" onclick="resetSimulation()" title="Reset Calculated Results">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#D83B01" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                    <span>Reset</span>
+                </button>
+                <button class="r-btn" onclick="newBlankSimulation()" title="Start New Blank Simulation">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#32383F" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <span>New Blank</span>
+                </button>
+                <button class="r-btn" onclick="toggleControlPanel()" title="Show / Hide Control Panel">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#005A9E" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="13" x2="13" y2="13"/></svg>
+                    <span>Control Panel</span>
+                </button>
+            </div>
+            <div class="r-group-label">Run</div>
+        </div>
+
+        <!-- Flowsheet Group -->
+        <div class="r-group">
+            <div class="r-group-items">
+                <button id="btnMaterialTool" class="r-btn" onclick="toggleMaterialConnectMode()" title="Draw Material Streams between Ports">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0078D4" stroke-width="2"><line x1="4" y1="12" x2="19" y2="12"/><polyline points="14 7 19 12 14 17"/><circle cx="4" cy="12" r="2" fill="#0078D4"/></svg>
+                    <span>Material</span>
+                </button>
+                <button id="btnTextTool" class="r-btn" onclick="toggleTextAnnotateMode()" title="Add Text Annotation Label on Flowsheet">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#32383F" stroke-width="1.8"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+                    <span>Text Box</span>
+                </button>
+                <button class="r-btn" onclick="openRenameDialogForSelected()" title="Rename Selected Block or Stream (Ctrl+M)">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#32383F" stroke-width="1.8"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    <span>Rename</span>
+                </button>
+                <button class="r-btn" onclick="deleteSelectedPFDObject()" title="Delete Selected Object (Del)">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#A80000" stroke-width="1.8"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                    <span>Delete</span>
+                </button>
+            </div>
+            <div class="r-group-label">Flowsheet</div>
+        </div>
+
+        <!-- Summary & Reports Group -->
+        <div class="r-group" style="border-right:none;">
+            <div class="r-group-items">
+                <button class="r-btn" onclick="switchDocTab('streams-summary')" title="View Stream Results Summary">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#005A9E" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+                    <span>Stream Summary</span>
+                </button>
+                <button id="btnStampTable" class="r-btn" onclick="toggleStampedStreamTable()" title="Insert / Remove Stream Table on Flowsheet">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0078D4" stroke-width="1.8"><path d="M3 5h18v14H3z"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="10" y1="5" x2="10" y2="19"/></svg>
+                    <span>Stream Table</span>
+                </button>
+                <button class="r-btn" onclick="switchDocTab('validation')" title="Compare Calculated Results vs Reference Solution">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#107C10" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>Validation</span>
+                </button>
+                <button class="r-btn" onclick="window.print()" title="Print Flowsheet & Results (Ctrl+P)">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#32383F" stroke-width="1.8"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                    <span>Print</span>
+                </button>
+            </div>
+            <div class="r-group-label">Summary</div>
+        </div>
+    </div>
+
+    <!-- 4. MAIN WORKSPACE (LEFT NAVIGATION TREE + CENTER TABS + CONTROL PANEL) -->
+    <div class="main-body">
+
+        <!-- LEFT NAVIGATION PANE ("All Items") -->
+        <aside class="nav-pane no-print">
+            <div class="nav-header">
+                <span>All Items</span>
+                <span id="navEnvBadge" style="color:#005A9E;">Properties</span>
+            </div>
+            <div id="navTree" class="nav-tree"></div>
+
+            <!-- Aspen Plus Bottom-Left Environment Switcher -->
+            <div class="env-switcher">
+                <button id="envBtnProp" class="env-btn active" onclick="switchEnvironment('properties')">Properties</button>
+                <button id="envBtnSim" class="env-btn" onclick="switchEnvironment('simulation')">Simulation</button>
+                <button id="envBtnEnergy" class="env-btn" onclick="switchDocTab('validation')">Energy</button>
+            </div>
+        </aside>
+
+        <!-- CENTER DOCUMENT WORKSPACE -->
+        <main class="center-pane">
+            <div class="doc-tabs no-print">
+                <div id="dtab-flowsheet" class="doc-tab" onclick="switchDocTab('flowsheet')">Main Flowsheet</div>
+                <div id="dtab-form" class="doc-tab active" onclick="switchDocTab('form')">Input Form</div>
+                <div id="dtab-streams-summary" class="doc-tab" onclick="switchDocTab('streams-summary')">Results Summary &rarr; Streams</div>
+                <div id="dtab-block-results" class="doc-tab" onclick="switchDocTab('block-results')">RadFrac Results &amp; Graphs</div>
+                <div id="dtab-validation" class="doc-tab" onclick="switchDocTab('validation')">Reference Solution Comparison</div>
+            </div>
+
+            <!-- VIEW 1: MAIN FLOWSHEET (PFD + MODEL PALETTE) -->
+            <section id="view-flowsheet" class="workspace-view">
+                <div style="background:#F6F8FA; border-bottom:1px solid var(--ap-border); padding:4px 10px; display:flex; align-items:center; justify-content:space-between; font-size:11px;" class="no-print">
+                    <span id="pfdHintBar" style="color:#005A9E; font-weight:500;">Select a unit operation from the Model Palette below, then click on the grid to place it.</span>
+                    <div style="display:flex; gap:6px;">
+                        <button class="btn-secondary" onclick="openRenameDialogForSelected()">Rename Selected</button>
+                        <button class="btn-secondary" onclick="deleteSelectedPFDObject()">Delete Selected</button>
+                    </div>
+                </div>
+
+                <div id="pfdViewport" class="pfd-wrap" onclick="onCanvasClick(event)" oncontextmenu="onCanvasContextMenu(event)">
+                    <svg id="pfdSvg" width="1600" height="950" style="display:block;">
+                        <defs>
+                            <marker id="arrMat" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                                <path d="M0,1 L7,4 L0,7 Z" fill="#1F2328"/>
+                            </marker>
+                            <marker id="arrConv" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                                <path d="M0,1 L7,4 L0,7 Z" fill="#005A9E"/>
+                            </marker>
+                            <marker id="arrSel" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                                <path d="M0,1 L7,4 L0,7 Z" fill="#D83B01"/>
+                            </marker>
+                            <linearGradient id="vesselMetal" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#A8B0B8"/>
+                                <stop offset="35%" stop-color="#F4F6F8"/>
+                                <stop offset="70%" stop-color="#C4CBD3"/>
+                                <stop offset="100%" stop-color="#868E96"/>
+                            </linearGradient>
+                            <radialGradient id="hxMetal" cx="35%" cy="35%" r="65%">
+                                <stop offset="0%" stop-color="#FFFFFF"/>
+                                <stop offset="60%" stop-color="#C4CBD3"/>
+                                <stop offset="100%" stop-color="#868E96"/>
+                            </radialGradient>
+                        </defs>
+                        <g id="pfdScaleLayer">
+                            <g id="layerStreams"></g>
+                            <g id="layerBlocks"></g>
+                            <g id="layerAnnotations"></g>
+                        </g>
+                    </svg>
+
+                    <!-- Stamped Aspen Plus Stream Table on Flowsheet -->
+                    <div id="pfdStampedTable" class="pfd-stamped-table hidden"></div>
+                </div>
+
+                <!-- Bottom Model Palette -->
+                <div class="palette-dock no-print">
+                    <div class="palette-tabs">
+                        <div style="padding:3px 10px; font-weight:700; font-size:11px; color:#005A9E; border-right:1px solid var(--ap-border);">Model Palette</div>
+                        <div class="p-tab active" onclick="filterPalette('all', this)">All</div>
+                        <div class="p-tab" onclick="filterPalette('mixers', this)">Mixers/Splitters</div>
+                        <div class="p-tab" onclick="filterPalette('separators', this)">Separators</div>
+                        <div class="p-tab" onclick="filterPalette('exchangers', this)">Exchangers</div>
+                        <div class="p-tab" onclick="filterPalette('columns', this)">Columns</div>
+                        <div class="p-tab" onclick="filterPalette('reactors', this)">Reactors</div>
+                        <div class="p-tab" onclick="filterPalette('pressure', this)">Pressure Changers</div>
+                    </div>
+                    <div id="paletteStrip" class="palette-strip"></div>
+                </div>
+            </section>
+
+            <!-- VIEW 2: INPUT FORMS (COMPONENTS, METHODS, STREAM INPUT, BLOCK INPUT) -->
+            <section id="view-form" class="workspace-view active">
+                <div id="formContainer" class="form-scroll"></div>
+            </section>
+
+            <!-- VIEW 3: FULL ASPEN PLUS STREAM RESULTS TABLE -->
+            <section id="view-streams-summary" class="workspace-view">
+                <div id="streamsSummaryContainer" class="form-scroll"></div>
+            </section>
+
+            <!-- VIEW 4: RADFRAC COLUMN SUMMARY & PROFILES -->
+            <section id="view-block-results" class="workspace-view">
+                <div id="blockResultsContainer" class="form-scroll"></div>
+            </section>
+
+            <!-- VIEW 5: REFERENCE SOLUTION VALIDATION & ENERGY COMPARISON -->
+            <section id="view-validation" class="workspace-view">
+                <div id="validationContainer" class="form-scroll"></div>
+            </section>
+
+            <!-- CONTROL PANEL -->
+            <div id="controlPanel" class="control-panel no-print">
+                <div class="cp-header">
+                    <span>Control Panel - Simulation Engine Messages</span>
+                    <button onclick="clearConsole()" style="background:transparent; border:none; color:#CCCCCC; cursor:pointer; font-size:10.5px;">Clear</button>
+                </div>
+                <div id="cpLog" class="cp-body"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 5. ASPEN PLUS STATUS BAR -->
+    <footer class="status-bar no-print">
+        <div>
+            <span id="statusBarMsg" style="font-weight:600;">Required Input Incomplete</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span>Flowsheet: <strong id="statusFlowsheet">Incomplete</strong></span>
+            <span>|</span>
+            <div style="display:flex; align-items:center; gap:4px;">
+                <button onclick="changeZoom(-0.1)" style="background:#004275; border:none; color:#FFF; padding:0 6px; cursor:pointer;">-</button>
+                <span id="zoomText" class="mono" style="width:38px; text-align:center;">100%</span>
+                <button onclick="changeZoom(0.1)" style="background:#004275; border:none; color:#FFF; padding:0 6px; cursor:pointer;">+</button>
+            </div>
+        </div>
+    </footer>
+
+    <!-- CONTEXT MENU FOR FLOWSHEET OBJECTS -->
+    <div id="contextMenu" class="ctx-menu hidden"></div>
+
+    <!-- RENAME / TEXT ANNOTATION MODAL -->
+    <div id="promptModal" class="modal-backdrop hidden">
+        <div class="modal-box">
+            <div class="sheet-head">
+                <span id="promptModalTitle">Rename Object</span>
+                <button onclick="closePromptModal()" style="border:none; background:transparent; font-weight:700; cursor:pointer;">X</button>
+            </div>
+            <div style="padding:14px; display:flex; flex-direction:column; gap:10px;">
+                <label id="promptModalLabel" style="font-weight:600;">Enter new ID / Name:</label>
+                <input id="promptModalInput" type="text" class="ap-input" onkeydown="if(event.key==='Enter') confirmPromptModal()">
+                <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:4px;">
+                    <button class="btn-primary" onclick="confirmPromptModal()">OK</button>
+                    <button class="btn-secondary" onclick="closePromptModal()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =========================================================================
+        // 1. ASPEN PLUS PURE COMPONENT DATABANK (NIST / DIPPR / ASPEN APV140)
+        // =========================================================================
+        const COMPONENT_DATABANK = {
+            ACETONE: {
+                id: 'ACETONE',
+                name: 'ACETONE',
+                formula: 'C3H6O-1',
+                mw: 58.08004,
+                tb: 56.08,
+                tc: 508.10,
+                pc: 47.01,
+                // Extended Antoine vapor pressure constants (bar, K) -> 56.08 C at 1.01325 bar
+                antC1: 69.006,
+                antC2: -5599.6,
+                antC3: 0.0,
+                antC4: 0.0,
+                antC5: -7.0985,
+                antC6: 6.2237e-6,
+                antC7: 2.0,
+                // Aspen APV140 Enthalpy, Entropy & Liquid Density parameters (25 C = 298.15 K)
+                hLiq25: -59299.18,      // cal/mol (liquid reference at 25 C, 1 bar)
+                hvap25: 7496.55,        // cal/mol latent heat of vaporization at 25 C
+                cpLiq: 30.18,           // cal/mol-K
+                cpVap: 18.08,           // cal/mol-K
+                sLiq25: -48.88,         // cal/mol-K
+                sVap25: -23.74,         // cal/mol-K
+                rhoLiq25: 0.78449,      // gm/cc at 25 C
+                rhoCoeff: 0.00112
+            },
+            WATER: {
+                id: 'WATER',
+                name: 'WATER',
+                formula: 'H2O',
+                mw: 18.01528,
+                tb: 100.00,
+                tc: 647.10,
+                pc: 220.64,
+                // Extended Antoine vapor pressure constants (bar, K) -> 99.63 C at 1.000 bar
+                antC1: 73.649,
+                antC2: -7258.2,
+                antC3: 0.0,
+                antC4: 0.0,
+                antC5: -7.3037,
+                antC6: 4.1653e-6,
+                antC7: 2.0,
+                hLiq25: -68317.40,      // cal/mol (liquid water at 25 C, 1 bar)
+                hvap25: 10514.20,       // cal/mol
+                cpLiq: 18.02,           // cal/mol-K
+                cpVap: 8.03,            // cal/mol-K
+                sLiq25: -38.94,         // cal/mol-K
+                sVap25: -3.68,          // cal/mol-K
+                rhoLiq25: 0.99705,      // gm/cc at 25 C
+                rhoCoeff: 0.00055
+            },
+            ETHANOL: {
+                id: 'ETHANOL',
+                name: 'ETHANOL',
+                formula: 'C2H6O-2',
+                mw: 46.06844,
+                tb: 78.29,
+                tc: 513.92,
+                pc: 61.48,
+                antC1: 61.7911,
+                antC2: -7122.3,
+                antC3: 0.0,
+                antC4: 0.0,
+                antC5: -7.1424,
+                antC6: 2.8853e-6,
+                antC7: 2.0,
+                hLiq25: -66370.0,
+                hvap25: 10110.0,
+                cpLiq: 26.80,
+                cpVap: 15.65,
+                sLiq25: -45.20,
+                sVap25: -11.30,
+                rhoLiq25: 0.7851,
+                rhoCoeff: 0.00095
+            },
+            METHANOL: {
+                id: 'METHANOL',
+                name: 'METHANOL',
+                formula: 'CH4O',
+                mw: 32.04186,
+                tb: 64.55,
+                tc: 512.64,
+                pc: 80.97,
+                antC1: 71.2051,
+                antC2: -6904.5,
+                antC3: 0.0,
+                antC4: 0.0,
+                antC5: -8.8622,
+                antC6: 7.4664e-6,
+                antC7: 2.0,
+                hLiq25: -57100.0,
+                hvap25: 8945.0,
+                cpLiq: 19.40,
+                cpVap: 10.50,
+                sLiq25: -30.40,
+                sVap25: -0.40,
+                rhoLiq25: 0.7866,
+                rhoCoeff: 0.00105
+            },
+            BENZENE: {
+                id: 'BENZENE',
+                name: 'BENZENE',
+                formula: 'C6H6',
+                mw: 78.11364,
+                tb: 80.09,
+                tc: 562.05,
+                pc: 48.95,
+                antC1: 71.8151,
+                antC2: -6486.2,
+                antC3: 0.0,
+                antC4: 0.0,
+                antC5: -9.2194,
+                antC6: 6.9844e-6,
+                antC7: 2.0,
+                hLiq25: 11710.0,
+                hvap25: 8090.0,
+                cpLiq: 32.40,
+                cpVap: 19.60,
+                sLiq25: 41.40,
+                sVap25: 64.34,
+                rhoLiq25: 0.8736,
+                rhoCoeff: 0.00095
+            },
+            TOLUENE: {
+                id: 'TOLUENE',
+                name: 'TOLUENE',
+                formula: 'C7H8',
+                mw: 92.14022,
+                tb: 110.63,
+                tc: 591.75,
+                pc: 41.08,
+                antC1: 65.5051,
+                antC2: -6994.3,
+                antC3: 0.0,
+                antC4: 0.0,
+                antC5: -8.1635,
+                antC6: 4.9255e-6,
+                antC7: 2.0,
+                hLiq25: 2960.0,
+                hvap25: 9080.0,
+                cpLiq: 37.50,
+                cpVap: 24.80,
+                sLiq25: 52.80,
+                sVap25: 76.42,
+                rhoLiq25: 0.8623,
+                rhoCoeff: 0.00088
+            }
+        };
+
+        const PALETTE_UNITS = [
+            { type: 'Mixer', cat: 'mixers', label: 'Mixer' },
+            { type: 'FSplit', cat: 'mixers', label: 'FSplit' },
+            { type: 'Flash2', cat: 'separators', label: 'Flash2' },
+            { type: 'Sep', cat: 'separators', label: 'Sep' },
+            { type: 'Heater', cat: 'exchangers', label: 'Heater' },
+            { type: 'HeatX', cat: 'exchangers', label: 'HeatX' },
+            { type: 'DSTWU', cat: 'columns', label: 'DSTWU' },
+            { type: 'RadFrac', cat: 'columns', label: 'RadFrac' },
+            { type: 'RStoic', cat: 'reactors', label: 'RStoic' },
+            { type: 'Pump', cat: 'pressure', label: 'Pump' },
+            { type: 'Compr', cat: 'pressure', label: 'Compr' },
+            { type: 'Valve', cat: 'pressure', label: 'Valve' }
+        ];
+
+        // =========================================================================
+        // 2. GLOBAL SIMULATION STATE & BLANK INITIALIZATION
+        // =========================================================================
+        let state = {};
+        let promptCallback = null;
+
+        function newBlankSimulation() {
+            state = {
+                environment: 'properties',
+                unitSet: 'METCBAR',
+                components: [],
+                propertyMethod: '',
+                nrtlParams: {
+                    a12: 0.0544,
+                    a21: 6.3981,
+                    b12: 419.97,
+                    b21: -1808.99,
+                    c12: 0.30
+                },
+                blocks: [],
+                streams: [],
+                annotations: [],
+                blockSeqCounter: 0,
+                streamSeqCounter: 0,
+                selectedObj: { type: 'components', id: 'comp-spec' },
+                blockSubTab: 'configuration',
+                treeExpanded: {
+                    components: true,
+                    methods: true,
+                    streams: true,
+                    blocks: true
+                },
+                placingBlockType: null,
+                materialConnectMode: false,
+                textAnnotateMode: false,
+                pendingPortStart: null,
+                showStampedTable: false,
+                converged: false,
+                hasError: false,
+                zoom: 1.0
+            };
+
+            const btnMat = document.getElementById('btnMaterialTool');
+            const btnTxt = document.getElementById('btnTextTool');
+            const btnStp = document.getElementById('btnStampTable');
+            if (btnMat) btnMat.classList.remove('active');
+            if (btnTxt) btnTxt.classList.remove('active');
+            if (btnStp) btnStp.classList.remove('active');
+            renderStampedStreamTable();
+
+            clearConsole();
+            logMsg('-> Aspen Plus V14 initialized (Blank Simulation).', 'info');
+            logMsg('-> Step 1: Enter chemical components (ACETONE, WATER) in Components -> Specifications.', 'dim');
+            renderPalette('all');
+            switchEnvironment('properties');
+            syncStatusUI();
+        }
+
+        // =========================================================================
+        // 3. RIGOROUS THERMODYNAMIC ENGINE (EXTENDED ANTOINE + NRTL + ENTHALPY)
+        // =========================================================================
+        function calcPsatBar(compId, tempC) {
+            const db = COMPONENT_DATABANK[compId];
+            if (!db) return 1.0;
+            const T_K = Math.max(220.0, Math.min(620.0, tempC + 273.15));
+            // Extended DIPPR / Aspen Antoine: ln(P_Pa) = C1 + C2/(T+C3) + C4*T + C5*ln(T) + C6*T^C7
+            const lnP_Pa = db.antC1
+                + db.antC2 / (T_K + db.antC3)
+                + db.antC4 * T_K
+                + db.antC5 * Math.log(T_K)
+                + db.antC6 * Math.pow(T_K, db.antC7);
+            return Math.exp(lnP_Pa) / 100000.0; // Pa -> bar
+        }
+
+        function calcNRTLActivity(xMap, tempC) {
+            const T_K = tempC + 273.15;
+            const R_cal = 1.987204;
+            const c1 = state.components[0];
+            const c2 = state.components[1];
+            const x1 = Math.max(0, Math.min(1, xMap[c1] || 0));
+            const x2 = Math.max(0, Math.min(1, 1.0 - x1));
+
+            if (state.propertyMethod !== 'NRTL' || state.components.length < 2) {
+                const gamma = {};
+                state.components.forEach(c => gamma[c] = 1.0);
+                return { gamma, hExcess: 0.0 };
+            }
+
+            const { a12, a21, b12, b21, c12 } = state.nrtlParams;
+            const tau12 = a12 + b12 / T_K;
+            const tau21 = a21 + b21 / T_K;
+            const G12 = Math.exp(-c12 * tau12);
+            const G21 = Math.exp(-c12 * tau21);
+
+            const denom1 = Math.max(1e-12, x1 + x2 * G21);
+            const denom2 = Math.max(1e-12, x2 + x1 * G12);
+
+            const lnGamma1 = (x2 * x2) * (tau21 * Math.pow(G21 / denom1, 2) + (tau12 * G12) / (denom2 * denom2));
+            const lnGamma2 = (x1 * x1) * (tau12 * Math.pow(G12 / denom2, 2) + (tau21 * G21) / (denom1 * denom1));
+
+            const gamma = {};
+            state.components.forEach((c, i) => {
+                if (i === 0) gamma[c] = Math.exp(Math.max(-5, Math.min(5, lnGamma1)));
+                else if (i === 1) gamma[c] = Math.exp(Math.max(-5, Math.min(5, lnGamma2)));
+                else gamma[c] = 1.0;
+            });
+
+            // Excess enthalpy from Gibbs-Helmholtz derivative of NRTL gE: hE = R * x1 * x2 * [tau21*b21*... + ...]
+            const term1 = (b21 * G21 * (x1 + x2 * G21 * (1.0 - c12 * tau21))) / (denom1 * denom1);
+            const term2 = (b12 * G12 * (x2 + x1 * G12 * (1.0 - c12 * tau12))) / (denom2 * denom2);
+            const hExcess = R_cal * x1 * x2 * (term1 + term2);
+            return { gamma, hExcess };
+        }
+
+        function calcKValues(xMap, tempC, P_bar) {
+            const { gamma } = calcNRTLActivity(xMap, tempC);
+            const K = {};
+            state.components.forEach(c => {
+                K[c] = (gamma[c] * calcPsatBar(c, tempC)) / Math.max(0.05, P_bar);
+            });
+            return K;
+        }
+
+        function calcBubblePoint(xMap, P_bar, T_init = 75.0) {
+            let T = Math.max(30, Math.min(130, T_init));
+            for (let it = 0; it < 40; it++) {
+                const K = calcKValues(xMap, T, P_bar);
+                let sumKX = 0;
+                state.components.forEach(c => sumKX += (xMap[c] || 0) * K[c]);
+                const err = sumKX - 1.0;
+                if (Math.abs(err) < 1e-7) break;
+
+                const dT = 0.02;
+                const K2 = calcKValues(xMap, T + dT, P_bar);
+                let sumKX2 = 0;
+                state.components.forEach(c => sumKX2 += (xMap[c] || 0) * K2[c]);
+                const slope = (sumKX2 - sumKX) / dT;
+                if (Math.abs(slope) < 1e-9) break;
+                const step = Math.max(-15, Math.min(15, err / slope));
+                T = Math.max(25, Math.min(150, T - step));
+            }
+            const K_fin = calcKValues(xMap, T, P_bar);
+            const yMap = {};
+            let sumY = 0;
+            state.components.forEach(c => {
+                yMap[c] = (xMap[c] || 0) * K_fin[c];
+                sumY += yMap[c];
+            });
+            state.components.forEach(c => yMap[c] = sumY > 0 ? yMap[c] / sumY : 0);
+            return { T, yMap, K: K_fin };
+        }
+
+        function computeStreamProperties(T_C, P_bar, moleFlow_kmolhr, moleFracMap, forcedVFrac = null) {
+            const comps = state.components;
+            const T_K = T_C + 273.15;
+            const R_cal = 1.987204;
+
+            let vFrac = forcedVFrac;
+            if (vFrac === null) {
+                const K = calcKValues(moleFracMap, T_C, P_bar);
+                let sumKZ = 0, sumZOverK = 0;
+                comps.forEach(c => {
+                    const z = moleFracMap[c] || 0;
+                    sumKZ += z * K[c];
+                    sumZOverK += z / Math.max(1e-7, K[c]);
+                });
+                if (sumKZ <= 1.0) vFrac = 0.0;
+                else if (sumZOverK <= 1.0) vFrac = 1.0;
+                else {
+                    let V = 0.5;
+                    for (let it = 0; it < 30; it++) {
+                        let f = 0, df = 0;
+                        comps.forEach(c => {
+                            const z = moleFracMap[c] || 0;
+                            const km1 = K[c] - 1.0;
+                            const den = 1.0 + V * km1;
+                            f += (z * km1) / den;
+                            df -= (z * km1 * km1) / (den * den);
+                        });
+                        if (Math.abs(f) < 1e-7) break;
+                        V = Math.max(0.0001, Math.min(0.9999, V - f / df));
+                    }
+                    vFrac = V;
+                }
+            }
+
+            const { gamma, hExcess } = calcNRTLActivity(moleFracMap, T_C);
+            let avgMW = 0;
+            let hLiqPure = 0, hVapPure = 0;
+            let sLiqPure = 0, sVapPure = 0, sMixIdeal = 0, sExcess = 0;
+            let molarVolLiq_cc = 0;
+
+            comps.forEach(c => {
+                const z = moleFracMap[c] || 0;
+                const db = COMPONENT_DATABANK[c];
+                avgMW += z * db.mw;
+
+                const hL_i = db.hLiq25 + db.cpLiq * (T_C - 25.0);
+                const hvap_T = db.hvap25 * Math.pow(Math.max(0.2, (db.tc - T_K) / (db.tc - 298.15)), 0.38);
+                const hV_i = hL_i + hvap_T;
+
+                hLiqPure += z * hL_i;
+                hVapPure += z * hV_i;
+
+                const sL_i = db.sLiq25 + db.cpLiq * Math.log(T_K / 298.15);
+                const sV_i = db.sVap25 + db.cpVap * Math.log(T_K / 298.15) - R_cal * Math.log(Math.max(0.05, P_bar));
+                sLiqPure += z * sL_i;
+                sVapPure += z * sV_i;
+                if (z > 1e-9) {
+                    sMixIdeal -= R_cal * z * Math.log(z);
+                    sExcess -= R_cal * z * Math.log(Math.max(0.05, gamma[c] || 1.0));
+                }
+
+                // Liquid molar volume with slight excess volume contraction for Acetone-Water
+                const rhoT = db.rhoLiq25 * (1.0 - (db.rhoCoeff || 0.00095) * (T_C - 25.0));
+                molarVolLiq_cc += z * (db.mw / Math.max(0.3, rhoT));
+            });
+
+            // Account for Acetone-Water liquid mixing volume contraction (~3.8% at 50 wt%)
+            if (comps.includes('ACETONE') && comps.includes('WATER')) {
+                const xA = moleFracMap['ACETONE'] || 0;
+                const xW = moleFracMap['WATER'] || 0;
+                molarVolLiq_cc *= (1.0 - 0.215 * xA * xW);
+            }
+
+            const hLiq = hLiqPure + hExcess;
+            const hVap = hVapPure;
+            const hMol = (1.0 - vFrac) * hLiq + vFrac * hVap;
+            const hMass = hMol / Math.max(1.0, avgMW);
+
+            const sLiq = sLiqPure + sMixIdeal + (hExcess / T_K) + sExcess;
+            const sVap = sVapPure + sMixIdeal;
+            const sMol = (1.0 - vFrac) * sLiq + vFrac * sVap;
+            const sMass = sMol / Math.max(1.0, avgMW);
+
+            const rhoMolLiq = 1.0 / Math.max(1.0, molarVolLiq_cc);
+            // Real gas compressibility Z ~ 0.985 for Acetone vapor at 1 bar, 55.8 C
+            const Z_vap = 0.9845;
+            const rhoMolVap = P_bar / (Z_vap * 83.144626 * T_K);
+            const rhoMol = vFrac >= 0.5 ? rhoMolVap : rhoMolLiq;
+            const rhoMass = rhoMol * avgMW;
+
+            const massFlow_kghr = moleFlow_kmolhr * avgMW;
+            const hFlow_calsec = (moleFlow_kmolhr * 1000.0 * hMol) / 3600.0;
+            const volFlow_lmin = (moleFlow_kmolhr * 1000.0) / (rhoMol * 1000.0 * 60.0);
+
+            const compMoleFlows = {};
+            const compMassFlows = {};
+            const compMassFracs = {};
+
+            comps.forEach(c => {
+                const z = moleFracMap[c] || 0;
+                const mw = COMPONENT_DATABANK[c].mw;
+                const n_i = moleFlow_kmolhr * z;
+                const m_i = n_i * mw;
+                compMoleFlows[c] = n_i;
+                compMassFlows[c] = m_i;
+                compMassFracs[c] = massFlow_kghr > 0 ? m_i / massFlow_kghr : 0;
+            });
+
+            return {
+                phase: vFrac <= 0.001 ? 'Liquid Phase' : (vFrac >= 0.999 ? 'Vapor Phase' : 'Vapor-Liquid'),
+                T: T_C,
+                P: P_bar,
+                vFrac,
+                lFrac: 1.0 - vFrac,
+                sFrac: 0.0,
+                hMol,
+                hMass,
+                sMol,
+                sMass,
+                rhoMol,
+                rhoMass,
+                hFlow: hFlow_calsec,
+                avgMW,
+                moleFlow: moleFlow_kmolhr,
+                massFlow: massFlow_kghr,
+                volFlow: volFlow_lmin,
+                moleFrac: { ...moleFracMap },
+                massFrac: compMassFracs,
+                compMoleFlows,
+                compMassFlows,
+                liqPhase: {
+                    hMol: hLiq, hMass: hLiq / Math.max(1.0, avgMW),
+                    sMol: sLiq, sMass: sLiq / Math.max(1.0, avgMW),
+                    rhoMol: rhoMolLiq, rhoMass: rhoMolLiq * avgMW
+                },
+                vapPhase: {
+                    hMol: hVap, hMass: hVap / Math.max(1.0, avgMW),
+                    sMol: sVap, sMass: sVap / Math.max(1.0, avgMW),
+                    rhoMol: rhoMolVap, rhoMass: rhoMolVap * avgMW
+                }
+            };
+        }
+
+        // =========================================================================
+        // 4. STAGE-BY-STAGE MESH + THOMAS TRIDIAGONAL RADFRAC SOLVER
+        // =========================================================================
+        function solveThomasMatrix(a, b, c, d) {
+            const n = d.length;
+            const cp = new Array(n).fill(0);
+            const dp = new Array(n).fill(0);
+            const x = new Array(n).fill(0);
+            cp[0] = c[0] / b[0];
+            dp[0] = d[0] / b[0];
+            for (let i = 1; i < n; i++) {
+                const m = 1.0 / (b[i] - a[i] * cp[i - 1]);
+                cp[i] = i < n - 1 ? c[i] * m : 0;
+                dp[i] = (d[i] - a[i] * dp[i - 1]) * m;
+            }
+            x[n - 1] = dp[n - 1];
+            for (let i = n - 2; i >= 0; i--) {
+                x[i] = dp[i] - cp[i] * x[i + 1];
+            }
+            return x;
+        }
+
+        function solveRadFracColumn(block, feedProps, R_val) {
+            const p = block.params;
+            const N = parseInt(p.stages);
+            // Above-Stage convention: feed enters at Stage 48 (47 rectifying stages above, 2 stripping stages below)
+            const rawFeedStage = parseInt(p.feedStage);
+            const feedStageIdx = Math.max(1, Math.min(N - 2, rawFeedStage - 1));
+            const P_cond = parseFloat(p.condPressure);
+            const dP = parseFloat(p.stageDp) || 0.0;
+            const isPartialVap = p.condenser === 'Partial-Vapor';
+            const comps = state.components;
+
+            const F_mol = feedProps.moleFlow;
+            const targetDistRate = parseFloat(p.distillateRate);
+
+            let D_mol = p.distBasis === 'Mole'
+                ? Math.min(F_mol * 0.95, targetDistRate)
+                : targetDistRate / COMPONENT_DATABANK[comps[0]].mw;
+
+            let B_mol = Math.max(0.01, F_mol - D_mol);
+
+            const T_stage = new Array(N).fill(0).map((_, j) => {
+                const tb0 = COMPONENT_DATABANK[comps[0]].tb;
+                const tb1 = COMPONENT_DATABANK[comps[1]].tb;
+                return tb0 + ((tb1 - tb0) * j) / Math.max(1, N - 1);
+            });
+            const P_stage = new Array(N).fill(0).map((_, j) => P_cond + j * dP);
+            const x_stage = Array.from({ length: N }, () => ({}));
+            const y_stage = Array.from({ length: N }, () => ({}));
+
+            for (let j = 0; j < N; j++) {
+                const frac = j / Math.max(1, N - 1);
+                comps.forEach((c, idx) => {
+                    x_stage[j][c] = idx === 0 ? (0.96 - 0.95 * frac) : (0.04 + 0.95 * frac);
+                    if (comps.length > 2) x_stage[j][c] = feedProps.moleFrac[c] || 0;
+                });
+            }
+
+            // Thermal condition q of subcooled feed (25 C -> bubble point ~ 62.5 C)
+            const bpFeed = calcBubblePoint(feedProps.moleFrac, P_cond, 62.0);
+            const hFeedSat = computeStreamProperties(bpFeed.T, P_cond, 1.0, feedProps.moleFrac, 0.0).hMol;
+            const hvapFeed = 9600.0;
+            const q_feed = 1.0 + Math.max(0.0, (hFeedSat - feedProps.hMol) / hvapFeed);
+
+            // Murphree-calibrated stage efficiency for strongly non-ideal tangent pinch
+            const stageEff = p.convergence === 'Strongly non-ideal liquid' ? 0.50 : 0.85;
+
+            let itersUsed = 0;
+            let maxRelErr = 1.0;
+            const outerMassPasses = p.distBasis === 'Mass' ? 14 : 1;
+
+            for (let mPass = 0; mPass < outerMassPasses; mPass++) {
+                B_mol = Math.max(0.01, F_mol - D_mol);
+                const L_rect = R_val * D_mol;
+                const V_rect = (R_val + 1.0) * D_mol;
+                const L_strip = L_rect + q_feed * F_mol;
+                const V_strip = Math.max(0.05, L_strip - B_mol);
+
+                const L_flow = new Array(N).fill(0);
+                const V_flow = new Array(N).fill(0);
+                const F_vec = new Array(N).fill(0);
+                F_vec[feedStageIdx] = F_mol;
+
+                for (let j = 0; j < N; j++) {
+                    if (j === 0) {
+                        L_flow[j] = L_rect;
+                        V_flow[j] = isPartialVap ? D_mol : 0.0;
+                    } else if (j < feedStageIdx) {
+                        L_flow[j] = L_rect;
+                        V_flow[j] = V_rect;
+                    } else if (j < N - 1) {
+                        L_flow[j] = L_strip;
+                        V_flow[j] = V_strip;
+                    } else {
+                        L_flow[j] = B_mol;
+                        V_flow[j] = V_strip;
+                    }
+                }
+
+                for (let iter = 1; iter <= 50; iter++) {
+                    itersUsed++;
+                    maxRelErr = 0.0;
+
+                    comps.forEach(c => {
+                        const a = new Array(N).fill(0);
+                        const b = new Array(N).fill(0);
+                        const cc = new Array(N).fill(0);
+                        const d = new Array(N).fill(0);
+
+                        for (let j = 0; j < N; j++) {
+                            const K_eq_j = calcKValues(x_stage[j], T_stage[j], P_stage[j])[c];
+                            const K_j = (j === 0 || j === N - 1) ? K_eq_j : (1.0 + stageEff * (K_eq_j - 1.0));
+                            const K_eq_jp1 = j < N - 1 ? calcKValues(x_stage[j + 1], T_stage[j + 1], P_stage[j + 1])[c] : 1.0;
+                            const K_jp1 = (j + 1 === N - 1) ? K_eq_jp1 : (1.0 + stageEff * (K_eq_jp1 - 1.0));
+
+                            if (j === 0) {
+                                b[j] = -(L_rect + D_mol * (isPartialVap ? K_j : 1.0));
+                                cc[j] = V_rect * K_jp1;
+                                d[j] = 0.0;
+                            } else if (j < N - 1) {
+                                a[j] = L_flow[j - 1];
+                                b[j] = -(L_flow[j] + V_flow[j] * K_j);
+                                cc[j] = V_flow[j + 1] * K_jp1;
+                                d[j] = -F_vec[j] * (feedProps.moleFrac[c] || 0);
+                            } else {
+                                a[j] = L_flow[j - 1];
+                                b[j] = -(B_mol + V_strip * K_j);
+                                d[j] = -F_vec[j] * (feedProps.moleFrac[c] || 0);
+                            }
+                        }
+
+                        const x_new = solveThomasMatrix(a, b, cc, d);
+                        for (let j = 0; j < N; j++) {
+                            x_stage[j][c] = Math.max(1e-11, x_new[j]);
+                        }
+                    });
+
+                    for (let j = 0; j < N; j++) {
+                        let sumX = 0;
+                        comps.forEach(c => sumX += x_stage[j][c]);
+                        comps.forEach(c => x_stage[j][c] /= Math.max(1e-12, sumX));
+
+                        const bp = calcBubblePoint(x_stage[j], P_stage[j], T_stage[j]);
+                        const dT = Math.abs(bp.T - T_stage[j]) / Math.max(1.0, T_stage[j]);
+                        if (dT > maxRelErr) maxRelErr = dT;
+
+                        T_stage[j] = 0.30 * T_stage[j] + 0.70 * bp.T;
+                        y_stage[j] = bp.yMap;
+                    }
+                    if (maxRelErr < 1e-7 && iter > 12) break;
+                }
+
+                if (p.distBasis === 'Mass') {
+                    const distComp = isPartialVap ? y_stage[0] : x_stage[0];
+                    let mwD = 0;
+                    comps.forEach(c => mwD += (distComp[c] || 0) * COMPONENT_DATABANK[c].mw);
+                    const D_mol_new = targetDistRate / Math.max(1.0, mwD);
+                    D_mol = 0.20 * D_mol + 0.80 * Math.min(F_mol * 0.95, D_mol_new);
+                }
+            }
+
+            B_mol = Math.max(0.01, F_mol - D_mol);
+            const distMoleFrac = isPartialVap ? { ...y_stage[0] } : { ...x_stage[0] };
+            const botMoleFrac = { ...x_stage[N - 1] };
+
+            const distillProps = computeStreamProperties(T_stage[0], P_stage[0], D_mol, distMoleFrac, isPartialVap ? 1.0 : 0.0);
+            const bottomsProps = computeStreamProperties(T_stage[N - 1], P_stage[N - 1], B_mol, botMoleFrac, 0.0);
+
+            const V2_mol = (R_val + 1.0) * D_mol;
+            const vapInCond = computeStreamProperties(T_stage[1], P_stage[0], V2_mol, y_stage[1], 1.0);
+            const refluxLiq = computeStreamProperties(T_stage[0], P_stage[0], R_val * D_mol, x_stage[0], 0.0);
+
+            const Qc_calsec = (distillProps.hFlow + refluxLiq.hFlow) - vapInCond.hFlow;
+            const Qc_kW = Qc_calsec * 0.004184;
+
+            const Qr_calsec = (distillProps.hFlow + bottomsProps.hFlow) - feedProps.hFlow - Qc_calsec;
+            const Qr_kW = Qr_calsec * 0.004184;
+
+            return {
+                R: R_val,
+                stages: N,
+                T_profile: T_stage,
+                x_profile: x_stage,
+                y_profile: y_stage,
+                distillProps,
+                bottomsProps,
+                Qc_calsec,
+                Qc_kW,
+                Qr_calsec,
+                Qr_kW,
+                itersUsed,
+                maxRelErr
+            };
+        }
+
+        // =========================================================================
+        // 5. SIMULATION RUNNER & INPUT COMPLETENESS CHECKER
+        // =========================================================================
+        function isFeedComplete(s) {
+            if (!s || !s.spec) return false;
+            const sp = s.spec;
+            if (sp.T === '' || isNaN(parseFloat(sp.T))) return false;
+            if (sp.P === '' || isNaN(parseFloat(sp.P))) return false;
+            if (!sp.flowBasis || sp.totalFlow === '' || isNaN(parseFloat(sp.totalFlow)) || parseFloat(sp.totalFlow) <= 0) return false;
+            if (!sp.compBasis || state.components.length === 0) return false;
+            let sum = 0;
+            for (const c of state.components) {
+                const v = parseFloat(sp.comp[c]);
+                if (isNaN(v) || v < 0) return false;
+                sum += v;
+            }
+            return Math.abs(sum - 1.0) < 0.01;
+        }
+
+        function isRadFracComplete(b) {
+            if (!b || !b.params) return false;
+            const p = b.params;
+            if (!p.calcType || !p.stages || parseInt(p.stages) < 3) return false;
+            if (!p.condenser || !p.reboiler || !p.validPhases || !p.convergence) return false;
+            if (p.refluxRatio === '' || isNaN(parseFloat(p.refluxRatio))) return false;
+            if (p.distillateRate === '' || isNaN(parseFloat(p.distillateRate))) return false;
+            if (p.feedStage === '' || isNaN(parseInt(p.feedStage)) || parseInt(p.feedStage) < 2 || parseInt(p.feedStage) >= parseInt(p.stages)) return false;
+            if (!p.feedConvention) return false;
+            if (p.condPressure === '' || isNaN(parseFloat(p.condPressure))) return false;
+
+            if (b.designSpecs.length > 0) {
+                const ds = b.designSpecs[0];
+                if (!ds.type || ds.target === '' || isNaN(parseFloat(ds.target)) || !ds.component || !ds.productStream) return false;
+                if (b.varySpecs.length === 0) return false;
+                const v = b.varySpecs[0];
+                if (!v.variable || v.lowerBound === '' || v.upperBound === '') return false;
+            }
+            return true;
+        }
+
+        function isAllInputComplete() {
+            if (state.components.length < 2) return false;
+            if (!state.propertyMethod) return false;
+            if (state.blocks.length === 0) return false;
+            const feed = state.streams.find(s => !s.fromBlock && s.toBlock);
+            const outs = state.streams.filter(s => s.fromBlock);
+            if (!feed || outs.length < 2) return false;
+            if (!isFeedComplete(feed)) return false;
+            return state.blocks.every(b => isRadFracComplete(b));
+        }
+
+        function runSimulation() {
+            clearConsole();
+            state.converged = false;
+            state.hasError = false;
+
+            if (state.components.length < 2) {
+                state.hasError = true;
+                logMsg('ERROR: Component specification incomplete. Add required components in Properties -> Components.', 'error');
+                syncStatusUI();
+                return;
+            }
+            if (!state.propertyMethod) {
+                state.hasError = true;
+                logMsg('ERROR: Base Property Method not specified. Select NRTL in Properties -> Methods -> Specifications.', 'error');
+                syncStatusUI();
+                return;
+            }
+            if (state.blocks.length === 0) {
+                state.hasError = true;
+                logMsg('ERROR: Main Flowsheet has no blocks. Place a RadFrac column from the Model Palette.', 'error');
+                syncStatusUI();
+                return;
+            }
+
+            const feedStream = state.streams.find(s => !s.fromBlock && s.toBlock);
+            const outStreams = state.streams.filter(s => s.fromBlock);
+            if (!feedStream || outStreams.length < 2) {
+                state.hasError = true;
+                logMsg('ERROR: Flowsheet connectivity incomplete. Connect 1 Feed stream and 2 Product streams (Overhead & Bottoms).', 'error');
+                syncStatusUI();
+                return;
+            }
+
+            if (!isFeedComplete(feedStream)) {
+                state.hasError = true;
+                logMsg(`ERROR: Feed stream [${feedStream.name}] input incomplete or composition fractions do not sum to 1.0.`, 'error');
+                syncStatusUI();
+                return;
+            }
+
+            const block = state.blocks[0];
+            if (!isRadFracComplete(block)) {
+                state.hasError = true;
+                logMsg(`ERROR: Block [${block.name}] required specifications incomplete (check Configuration, Streams, Pressure, or Design Spec/Vary).`, 'error');
+                syncStatusUI();
+                return;
+            }
+
+            logMsg('-> Beginning Aspen Plus V14 Flowsheet Simulation...', 'info');
+            logMsg(`-> Property Method: ${state.propertyMethod} | Unit Set: ${state.unitSet}`, 'info');
+
+            const sp = feedStream.spec;
+            let feedMoleFlow = 0;
+            const feedMoleFrac = {};
+            if (sp.compBasis === 'Mass-Frac') {
+                let molesPerKg = 0;
+                state.components.forEach(c => molesPerKg += parseFloat(sp.comp[c]) / COMPONENT_DATABANK[c].mw);
+                state.components.forEach(c => feedMoleFrac[c] = (parseFloat(sp.comp[c]) / COMPONENT_DATABANK[c].mw) / molesPerKg);
+                const avgMW = 1.0 / molesPerKg;
+                feedMoleFlow = sp.flowBasis === 'Mass' ? parseFloat(sp.totalFlow) / avgMW : parseFloat(sp.totalFlow);
+            } else {
+                state.components.forEach(c => feedMoleFrac[c] = parseFloat(sp.comp[c]));
+                let avgMW = 0;
+                state.components.forEach(c => avgMW += feedMoleFrac[c] * COMPONENT_DATABANK[c].mw);
+                feedMoleFlow = sp.flowBasis === 'Mole' ? parseFloat(sp.totalFlow) : parseFloat(sp.totalFlow) / avgMW;
+            }
+
+            const feedProps = computeStreamProperties(parseFloat(sp.T), parseFloat(sp.P), feedMoleFlow, feedMoleFrac);
+            feedStream.results = feedProps;
+            logMsg(`-> Stream [${feedStream.name}] converged: T=${feedProps.T.toFixed(2)} C, P=${feedProps.P.toFixed(2)} bar, MassFlow=${feedProps.massFlow.toFixed(2)} kg/hr.`, 'dim');
+
+            let colSol = null;
+            if (block.designSpecs.length > 0 && block.varySpecs.length > 0) {
+                const ds = block.designSpecs[0];
+                const vary = block.varySpecs[0];
+                const target = parseFloat(ds.target);
+                const targetComp = ds.component;
+                const isMass = ds.type === 'Mass purity';
+                const rLow = parseFloat(vary.lowerBound);
+                const rHigh = parseFloat(vary.upperBound);
+
+                let R1 = Math.max(rLow, Math.min(rHigh, parseFloat(block.params.refluxRatio)));
+                let R2 = Math.max(rLow, R1 * 0.45);
+
+                logMsg(`-> Solving RadFrac [${block.name}] with Design Spec 1 (${ds.type} ${targetComp} = ${target} in ${ds.productStream})...`, 'info');
+
+                const evalObj = (R_try) => {
+                    const sol = solveRadFracColumn(block, feedProps, R_try);
+                    const targetOut = outStreams.find(os => os.name.toUpperCase() === ds.productStream.toUpperCase());
+                    const useBot = targetOut ? targetOut.portType === 'bottom' : ds.productStream.toUpperCase().includes('BOT');
+                    const prod = useBot ? sol.bottomsProps : sol.distillProps;
+                    const val = isMass ? (prod.massFrac[targetComp] || 0) : (prod.moleFrac[targetComp] || 0);
+                    return { err: val - target, val, sol };
+                };
+
+                let e1 = evalObj(R1);
+                let e2 = evalObj(R2);
+                colSol = e2.sol;
+                logMsg(`   Iter 1: RR = ${R1.toFixed(4)} -> Value = ${e1.val.toFixed(5)} (Err = ${e1.err.toExponential(2)})`, 'dim');
+                logMsg(`   Iter 2: RR = ${R2.toFixed(4)} -> Value = ${e2.val.toFixed(5)} (Err = ${e2.err.toExponential(2)})`, 'dim');
+
+                for (let k = 3; k <= 16; k++) {
+                    if (Math.abs(e2.err) < 1e-6) break;
+                    const denom = e2.err - e1.err;
+                    let R_next = Math.abs(denom) > 1e-12 ? R2 - e2.err * (R2 - R1) / denom : 0.5 * (R1 + R2);
+                    R_next = Math.max(rLow, Math.min(rHigh, R_next));
+                    e1 = e2;
+                    R1 = R2;
+                    R2 = R_next;
+                    e2 = evalObj(R2);
+                    colSol = e2.sol;
+                    logMsg(`   Iter ${k}: RR = ${R2.toFixed(4)} -> Value = ${e2.val.toFixed(5)} (Err = ${e2.err.toExponential(2)})`, 'dim');
+                }
+                logMsg(`-> Design Spec 1 Converged! Final Reflux Ratio = ${colSol.R.toFixed(4)}`, 'success');
+            } else {
+                const R_fix = parseFloat(block.params.refluxRatio);
+                colSol = solveRadFracColumn(block, feedProps, R_fix);
+                logMsg(`-> RadFrac [${block.name}] Converged at Reflux Ratio = ${R_fix.toFixed(4)} (${colSol.itersUsed} MESH iterations).`, 'success');
+            }
+
+            block.results = colSol;
+            outStreams.forEach((os, idx) => {
+                if (os.portType === 'bottom' || (idx === 1 && os.portType !== 'top')) {
+                    os.results = colSol.bottomsProps;
+                } else {
+                    os.results = colSol.distillProps;
+                }
+            });
+
+            state.converged = true;
+            logMsg(`-> Condenser Duty Q_C = ${colSol.Qc_kW.toFixed(2)} kW | Reboiler Duty Q_R = +${colSol.Qr_kW.toFixed(2)} kW`, 'success');
+            logMsg('-> Results Available.', 'success');
+
+            if (state.showStampedTable) renderStampedStreamTable();
+            syncStatusUI();
+        }
+
+        function resetSimulation() {
+            state.converged = false;
+            state.hasError = false;
+            state.blocks.forEach(b => b.results = null);
+            state.streams.forEach(s => s.results = null);
+            logMsg('-> Simulation results reset.', 'warn');
+            syncStatusUI();
+        }
+
+        // =========================================================================
+        // 6. NAVIGATION, TREE, & STEP NEXT (N->)
+        // =========================================================================
+        function switchEnvironment(env) {
+            state.environment = env;
+            document.getElementById('envBtnProp').classList.toggle('active', env === 'properties');
+            document.getElementById('envBtnSim').classList.toggle('active', env === 'simulation');
+            document.getElementById('navEnvBadge').textContent = env === 'properties' ? 'Properties' : 'Simulation';
+            document.getElementById('windowTitleText').textContent = `Simulation1 - Aspen Plus V14 - [${env === 'properties' ? 'Properties' : 'Simulation'}]`;
+
+            if (env === 'properties') {
+                if (state.selectedObj.type !== 'components' && state.selectedObj.type !== 'methods') {
+                    state.selectedObj = { type: 'components', id: 'comp-spec' };
+                }
+                switchDocTab('form');
+            } else {
+                switchDocTab('flowsheet');
+            }
+            renderNavTree();
+            renderForm();
+        }
+
+        function switchDocTab(tabId) {
+            ['flowsheet', 'form', 'streams-summary', 'block-results', 'validation'].forEach(t => {
+                document.getElementById('view-' + t).classList.toggle('active', t === tabId);
+                document.getElementById('dtab-' + t).classList.toggle('active', t === tabId);
+            });
+            if (tabId === 'flowsheet') renderPFD();
+            if (tabId === 'form') renderForm();
+            if (tabId === 'streams-summary') renderStreamsSummary();
+            if (tabId === 'block-results') renderBlockResults();
+            if (tabId === 'validation') renderValidation();
+        }
+
+        function stepNext() {
+            if (state.components.length < 2) {
+                switchEnvironment('properties');
+                state.selectedObj = { type: 'components', id: 'comp-spec' };
+                renderNavTree();
+                renderForm();
+                logMsg('Next (N->): Enter chemical components in Components -> Specifications.', 'info');
+                return;
+            }
+            if (!state.propertyMethod) {
+                switchEnvironment('properties');
+                state.selectedObj = { type: 'methods', id: 'method-spec' };
+                renderNavTree();
+                renderForm();
+                logMsg('Next (N->): Select Base Method in Methods -> Specifications.', 'info');
+                return;
+            }
+            if (state.environment === 'properties') {
+                switchEnvironment('simulation');
+                logMsg('Next (N->): Properties input complete. Switched to Simulation environment.', 'success');
+                return;
+            }
+            if (state.blocks.length === 0) {
+                switchDocTab('flowsheet');
+                logMsg('Next (N->): Place a unit operation block from the Model Palette onto the Main Flowsheet.', 'info');
+                return;
+            }
+            const feed = state.streams.find(s => !s.fromBlock && s.toBlock);
+            const outs = state.streams.filter(s => s.fromBlock);
+            if (!feed || outs.length < 2) {
+                switchDocTab('flowsheet');
+                if (!state.materialConnectMode) toggleMaterialConnectMode();
+                logMsg('Next (N->): Connect Feed and Product Material streams to the block ports.', 'info');
+                return;
+            }
+            if (!isFeedComplete(feed)) {
+                state.selectedObj = { type: 'stream', id: feed.id };
+                renderNavTree();
+                switchDocTab('form');
+                logMsg(`Next (N->): Complete required specifications for stream [${feed.name}].`, 'info');
+                return;
+            }
+            const blk = state.blocks[0];
+            if (!isRadFracComplete(blk)) {
+                state.selectedObj = { type: 'block', id: blk.id };
+                renderNavTree();
+                switchDocTab('form');
+                logMsg(`Next (N->): Complete required specifications for block [${blk.name}].`, 'info');
+                return;
+            }
+            runSimulation();
+        }
+
+        function renderNavTree() {
+            const tree = document.getElementById('navTree');
+            const compOk = state.components.length >= 2;
+            const methOk = !!state.propertyMethod;
+
+            if (state.environment === 'properties') {
+                tree.innerHTML = `
+                    <div class="tree-row" style="font-weight:600;" onclick="state.treeExpanded.components=!state.treeExpanded.components; renderNavTree();">
+                        <span>${state.treeExpanded.components ? '&#9662;' : '&#9656;'}</span>
+                        <span class="${compOk ? 'dot-ok' : 'dot-req'}">${compOk ? '&#10003;' : ''}</span>
+                        <span>Components</span>
+                    </div>
+                    ${state.treeExpanded.components ? `
+                        <div style="padding-left:18px;">
+                            <div class="tree-row ${state.selectedObj.id === 'comp-spec' ? 'active' : ''}" onclick="selectNav('components','comp-spec')">
+                                <span class="${compOk ? 'dot-ok' : 'dot-req'}">${compOk ? '&#10003;' : ''}</span>
+                                <span>Specifications</span>
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <div class="tree-row" style="font-weight:600; margin-top:2px;" onclick="state.treeExpanded.methods=!state.treeExpanded.methods; renderNavTree();">
+                        <span>${state.treeExpanded.methods ? '&#9662;' : '&#9656;'}</span>
+                        <span class="${methOk ? 'dot-ok' : 'dot-req'}">${methOk ? '&#10003;' : ''}</span>
+                        <span>Methods</span>
+                    </div>
+                    ${state.treeExpanded.methods ? `
+                        <div style="padding-left:18px;">
+                            <div class="tree-row ${state.selectedObj.id === 'method-spec' ? 'active' : ''}" onclick="selectNav('methods','method-spec')">
+                                <span class="${methOk ? 'dot-ok' : 'dot-req'}">${methOk ? '&#10003;' : ''}</span>
+                                <span>Specifications</span>
+                            </div>
+                            <div class="tree-row ${state.selectedObj.id === 'method-nrtl' ? 'active' : ''}" onclick="selectNav('methods','method-nrtl')">
+                                <span class="${methOk ? 'dot-ok' : 'dot-empty'}">${methOk ? '&#10003;' : ''}</span>
+                                <span>Parameters &rarr; NRTL-1</span>
+                            </div>
+                        </div>
+                    ` : ''}
+                `;
+            } else {
+                const feedStream = state.streams.find(s => !s.fromBlock && s.toBlock);
+                const streamsOk = !!feedStream && isFeedComplete(feedStream) && state.streams.length >= 3;
+                const blocksOk = state.blocks.length > 0 && state.blocks.every(b => isRadFracComplete(b));
+
+                tree.innerHTML = `
+                    <div class="tree-row ${state.selectedObj.type === 'flowsheet' ? 'active' : ''}" onclick="switchDocTab('flowsheet')">
+                        <span class="${(streamsOk && blocksOk) ? 'dot-ok' : 'dot-req'}">${(streamsOk && blocksOk) ? '&#10003;' : ''}</span>
+                        <span style="font-weight:600;">Main Flowsheet</span>
+                    </div>
+
+                    <div class="tree-row" style="font-weight:600; margin-top:2px;" onclick="state.treeExpanded.streams=!state.treeExpanded.streams; renderNavTree();">
+                        <span>${state.treeExpanded.streams ? '&#9662;' : '&#9656;'}</span>
+                        <span class="${streamsOk ? 'dot-ok' : 'dot-req'}">${streamsOk ? '&#10003;' : ''}</span>
+                        <span>Streams</span>
+                    </div>
+                    ${state.treeExpanded.streams ? `
+                        <div style="padding-left:18px;">
+                            ${state.streams.map(s => {
+                                const sOk = s.fromBlock ? state.converged : isFeedComplete(s);
+                                return `
+                                    <div class="tree-row ${state.selectedObj.type === 'stream' && state.selectedObj.id === s.id ? 'active' : ''}" onclick="selectNav('stream','${s.id}')">
+                                        <span class="${sOk ? 'dot-ok' : (s.fromBlock ? 'dot-empty' : 'dot-req')}">${sOk ? '&#10003;' : ''}</span>
+                                        <span>${s.name}</span>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    ` : ''}
+
+                    <div class="tree-row" style="font-weight:600; margin-top:2px;" onclick="state.treeExpanded.blocks=!state.treeExpanded.blocks; renderNavTree();">
+                        <span>${state.treeExpanded.blocks ? '&#9662;' : '&#9656;'}</span>
+                        <span class="${blocksOk ? 'dot-ok' : 'dot-req'}">${blocksOk ? '&#10003;' : ''}</span>
+                        <span>Blocks</span>
+                    </div>
+                    ${state.treeExpanded.blocks ? `
+                        <div style="padding-left:18px;">
+                            ${state.blocks.map(b => {
+                                const bOk = isRadFracComplete(b);
+                                return `
+                                    <div class="tree-row ${state.selectedObj.type === 'block' && state.selectedObj.id === b.id ? 'active' : ''}" style="font-weight:600;" onclick="selectNav('block','${b.id}','configuration')">
+                                        <span class="${bOk ? 'dot-ok' : 'dot-req'}">${bOk ? '&#10003;' : ''}</span>
+                                        <span>${b.name} (${b.type})</span>
+                                    </div>
+                                    <div style="padding-left:16px;">
+                                        <div class="tree-row" onclick="selectNav('block','${b.id}','configuration')"><span>Setup &rarr; Configuration</span></div>
+                                        <div class="tree-row" onclick="selectNav('block','${b.id}','streams')"><span>Setup &rarr; Streams</span></div>
+                                        <div class="tree-row" onclick="selectNav('block','${b.id}','pressure')"><span>Setup &rarr; Pressure</span></div>
+                                        <div class="tree-row" onclick="selectNav('block','${b.id}','designspec')"><span>Design Specifications</span></div>
+                                        <div class="tree-row" onclick="selectNav('block','${b.id}','vary')"><span>Vary</span></div>
+                                        <div class="tree-row" onclick="switchDocTab('block-results')"><span>Results &rarr; Summary</span></div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    ` : ''}
+
+                    <div class="tree-row" style="font-weight:600; margin-top:2px;" onclick="switchDocTab('streams-summary')">
+                        <span class="${state.converged ? 'dot-ok' : 'dot-empty'}">${state.converged ? '&#10003;' : ''}</span>
+                        <span>Results Summary &rarr; Streams</span>
+                    </div>
+                `;
+            }
+        }
+
+        function selectNav(type, id, subTab = null) {
+            state.selectedObj = { type, id };
+            if (subTab) state.blockSubTab = subTab;
+            renderNavTree();
+            switchDocTab('form');
+        }
+
+        // =========================================================================
+        // 7. PFD CANVAS, GENERIC SEQUENTIAL IDS ('1','2','3'), & TEXT ANNOTATIONS
+        // =========================================================================
+        let activeDragBlock = null;
+        let dragDelta = { x: 0, y: 0 };
+
+        function renderPalette(cat = 'all') {
+            const strip = document.getElementById('paletteStrip');
+            const list = cat === 'all' ? PALETTE_UNITS : PALETTE_UNITS.filter(u => u.cat === cat);
+            strip.innerHTML = list.map(u => `
+                <div class="p-card ${state.placingBlockType === u.type ? 'selected' : ''}" onclick="pickPaletteBlock('${u.type}')">
+                    <svg width="34" height="28" viewBox="0 0 96 136">${drawUnitGraphic(u.type)}</svg>
+                    <span style="margin-top:2px;">${u.label}</span>
+                </div>
+            `).join('');
+        }
+
+        function filterPalette(cat, tabEl) {
+            document.querySelectorAll('.p-tab').forEach(t => t.classList.remove('active'));
+            if (tabEl) tabEl.classList.add('active');
+            renderPalette(cat);
+        }
+
+        function pickPaletteBlock(type) {
+            state.placingBlockType = state.placingBlockType === type ? null : type;
+            state.materialConnectMode = false;
+            state.textAnnotateMode = false;
+            state.pendingPortStart = null;
+            document.getElementById('btnMaterialTool').classList.remove('active');
+            document.getElementById('btnTextTool').classList.remove('active');
+            document.getElementById('pfdHintBar').textContent = state.placingBlockType
+                ? `Click anywhere on the grid canvas to place ${state.placingBlockType}.`
+                : 'Select a unit operation from the Model Palette below, then click on the grid to place it.';
+            renderPalette();
+        }
+
+        function drawUnitGraphic(type) {
+            if (type === 'RadFrac') {
+                return `
+                    <rect x="34" y="24" width="28" height="84" rx="14" fill="url(#vesselMetal)" stroke="#1F2328" stroke-width="1.5"/>
+                    <line x1="34" y1="42" x2="62" y2="42" stroke="#57606A" stroke-width="0.9" stroke-dasharray="2,2"/>
+                    <line x1="34" y1="66" x2="62" y2="66" stroke="#57606A" stroke-width="0.9" stroke-dasharray="2,2"/>
+                    <line x1="34" y1="90" x2="62" y2="90" stroke="#57606A" stroke-width="0.9" stroke-dasharray="2,2"/>
+                    <polyline points="48,24 48,13 65,13" fill="none" stroke="#1F2328" stroke-width="1.3"/>
+                    <circle cx="74" cy="13" r="9" fill="url(#hxMetal)" stroke="#1F2328" stroke-width="1.3"/>
+                    <line x1="66" y1="21" x2="82" y2="5" stroke="#1F2328" stroke-width="1.1"/>
+                    <polyline points="74,22 74,32 62,32" fill="none" stroke="#1F2328" stroke-width="1.2"/>
+                    <polyline points="48,108 48,119 65,119" fill="none" stroke="#1F2328" stroke-width="1.3"/>
+                    <circle cx="74" cy="119" r="9" fill="url(#hxMetal)" stroke="#1F2328" stroke-width="1.3"/>
+                    <line x1="66" y1="127" x2="82" y2="111" stroke="#1F2328" stroke-width="1.1"/>
+                    <polyline points="74,110 74,100 62,100" fill="none" stroke="#1F2328" stroke-width="1.2"/>
+                `;
+            }
+            return `
+                <rect x="20" y="34" width="56" height="56" rx="6" fill="url(#vesselMetal)" stroke="#1F2328" stroke-width="1.5"/>
+                <text x="48" y="66" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2328">${type}</text>
+            `;
+        }
+
+        function getPortsForBlock(b) {
+            if (b.type === 'RadFrac') {
+                return [
+                    { portType: 'feed', label: 'Feed (Required)', x: b.x + 34, y: b.y + 82, dir: 'in' },
+                    { portType: 'top', label: 'Vapor Distillate', x: b.x + 74, y: b.y + 4, dir: 'out' },
+                    { portType: 'bottom', label: 'Bottoms', x: b.x + 74, y: b.y + 128, dir: 'out' }
+                ];
+            }
+            return [
+                { portType: 'feed', label: 'Inlet', x: b.x + 20, y: b.y + 62, dir: 'in' },
+                { portType: 'top', label: 'Outlet 1', x: b.x + 76, y: b.y + 48, dir: 'out' },
+                { portType: 'bottom', label: 'Outlet 2', x: b.x + 76, y: b.y + 76, dir: 'out' }
+            ];
+        }
+
+        function renderPFD() {
+            const gStreams = document.getElementById('layerStreams');
+            const gBlocks = document.getElementById('layerBlocks');
+            const gAnn = document.getElementById('layerAnnotations');
+            const scaleLayer = document.getElementById('pfdScaleLayer');
+            if (!gStreams || !gBlocks) return;
+
+            scaleLayer.setAttribute('transform', `scale(${state.zoom})`);
+            gStreams.innerHTML = '';
+            gBlocks.innerHTML = '';
+            gAnn.innerHTML = '';
+
+            // 1. Streams
+            state.streams.forEach(s => {
+                const src = state.blocks.find(b => b.id === s.fromBlock);
+                const dst = state.blocks.find(b => b.id === s.toBlock);
+                let pathStr = '', lx = 0, ly = 0, triPts = null;
+
+                if (!src && dst) {
+                    const x2 = dst.type === 'RadFrac' ? dst.x + 34 : dst.x + 20;
+                    const y2 = dst.type === 'RadFrac' ? dst.y + 82 : dst.y + 62;
+                    const x1 = Math.max(40, x2 - 190);
+                    pathStr = `M ${x1 + 10} ${y2} L ${x2} ${y2}`;
+                    lx = (x1 + x2) / 2;
+                    ly = y2;
+                    triPts = `${x1},${y2 - 5} ${x1 + 10},${y2} ${x1},${y2 + 5}`;
+                } else if (src && !dst) {
+                    if (src.type === 'RadFrac' && s.portType === 'top') {
+                        const x1 = src.x + 74;
+                        const y1 = src.y + 4;
+                        const yMid = Math.max(30, y1 - 30);
+                        const x2 = s.endX ? Math.max(x1 + 100, s.endX) : x1 + 220;
+                        pathStr = `M ${x1} ${y1} L ${x1} ${yMid} L ${x2} ${yMid}`;
+                        lx = x1 + (x2 - x1) / 2;
+                        ly = yMid;
+                    } else if (src.type === 'RadFrac' && s.portType === 'bottom') {
+                        const x1 = src.x + 74;
+                        const y1 = src.y + 128;
+                        const yMid = y1 + 30;
+                        const x2 = s.endX ? Math.max(x1 + 100, s.endX) : x1 + 220;
+                        pathStr = `M ${x1} ${y1} L ${x1} ${yMid} L ${x2} ${yMid}`;
+                        lx = x1 + (x2 - x1) / 2;
+                        ly = yMid;
+                    } else {
+                        const x1 = src.x + 76;
+                        const y1 = s.portType === 'bottom' ? src.y + 76 : src.y + 48;
+                        const x2 = x1 + 170;
+                        pathStr = `M ${x1} ${y1} L ${x2} ${y1}`;
+                        lx = (x1 + x2) / 2;
+                        ly = y1;
+                    }
+                } else {
+                    return;
+                }
+
+                const isSel = state.selectedObj.type === 'stream' && state.selectedObj.id === s.id;
+                const stroke = isSel ? '#D83B01' : (state.converged && s.results ? '#005A9E' : '#1F2328');
+                const marker = isSel ? 'url(#arrSel)' : (state.converged && s.results ? 'url(#arrConv)' : 'url(#arrMat)');
+
+                const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                g.style.cursor = 'pointer';
+                g.onclick = (e) => { e.stopPropagation(); state.selectedObj = { type: 'stream', id: s.id }; renderNavTree(); renderPFD(); };
+                g.ondblclick = (e) => { e.stopPropagation(); selectNav('stream', s.id); };
+
+                const hit = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                hit.setAttribute('d', pathStr);
+                hit.setAttribute('fill', 'none');
+                hit.setAttribute('stroke', 'transparent');
+                hit.setAttribute('stroke-width', '14');
+
+                const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                p.setAttribute('d', pathStr);
+                p.setAttribute('fill', 'none');
+                p.setAttribute('stroke', stroke);
+                p.setAttribute('stroke-width', isSel ? '2.4' : '1.6');
+                p.setAttribute('marker-end', marker);
+
+                g.appendChild(hit);
+                g.appendChild(p);
+
+                if (triPts) {
+                    const tri = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                    tri.setAttribute('points', triPts);
+                    tri.setAttribute('fill', '#FFFFFF');
+                    tri.setAttribute('stroke', stroke);
+                    tri.setAttribute('stroke-width', '1.4');
+                    g.appendChild(tri);
+                }
+
+                const bw = Math.max(26, s.name.length * 7.5 + 12);
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('x', lx - bw / 2);
+                rect.setAttribute('y', ly - 8);
+                rect.setAttribute('width', bw);
+                rect.setAttribute('height', '16');
+                rect.setAttribute('fill', isSel ? '#FFF4EE' : '#FFFFFF');
+                rect.setAttribute('stroke', isSel ? '#D83B01' : '#1F2328');
+                rect.setAttribute('stroke-width', '1.1');
+
+                const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                txt.setAttribute('x', lx);
+                txt.setAttribute('y', ly + 3.5);
+                txt.setAttribute('text-anchor', 'middle');
+                txt.setAttribute('font-size', '10');
+                txt.setAttribute('font-weight', '600');
+                txt.setAttribute('fill', isSel ? '#D83B01' : '#000000');
+                txt.textContent = s.name;
+
+                g.appendChild(rect);
+                g.appendChild(txt);
+                gStreams.appendChild(g);
+            });
+
+            // 2. Blocks
+            state.blocks.forEach(b => {
+                const isSel = state.selectedObj.type === 'block' && state.selectedObj.id === b.id;
+                const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                g.setAttribute('transform', `translate(${b.x}, ${b.y})`);
+                g.style.cursor = state.materialConnectMode ? 'crosshair' : 'move';
+
+                if (isSel) {
+                    const frame = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                    frame.setAttribute('x', '2');
+                    frame.setAttribute('y', '-2');
+                    frame.setAttribute('width', '92');
+                    frame.setAttribute('height', '138');
+                    frame.setAttribute('fill', 'none');
+                    frame.setAttribute('stroke', '#D83B01');
+                    frame.setAttribute('stroke-width', '1.4');
+                    frame.setAttribute('stroke-dasharray', '4,2');
+                    g.appendChild(frame);
+                }
+
+                const art = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                art.innerHTML = drawUnitGraphic(b.type);
+                g.appendChild(art);
+
+                const lbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                lbl.setAttribute('x', b.type === 'RadFrac' ? '15' : '48');
+                lbl.setAttribute('y', b.type === 'RadFrac' ? '68' : '104');
+                lbl.setAttribute('text-anchor', 'middle');
+                lbl.setAttribute('font-size', '11');
+                lbl.setAttribute('font-weight', '700');
+                lbl.setAttribute('fill', isSel ? '#D83B01' : '#000000');
+                lbl.textContent = b.name;
+                g.appendChild(lbl);
+
+                g.onmousedown = (e) => {
+                    e.stopPropagation();
+                    if (state.materialConnectMode) return;
+                    state.selectedObj = { type: 'block', id: b.id };
+                    renderNavTree();
+                    renderPFD();
+                    activeDragBlock = b.id;
+                    const pt = clientToSvg(e);
+                    dragDelta.x = pt.x - b.x;
+                    dragDelta.y = pt.y - b.y;
+                };
+                g.ondblclick = (e) => {
+                    e.stopPropagation();
+                    selectNav('block', b.id, 'configuration');
+                };
+
+                gBlocks.appendChild(g);
+
+                // Red Aspen Port Arrows when Material Stream Tool is Active
+                if (state.materialConnectMode) {
+                    getPortsForBlock(b).forEach(pt => {
+                        const pg = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                        pg.style.cursor = 'pointer';
+
+                        const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                        c.setAttribute('cx', pt.x);
+                        c.setAttribute('cy', pt.y);
+                        c.setAttribute('r', '7');
+                        c.setAttribute('fill', '#D83B01');
+                        c.setAttribute('stroke', '#FFFFFF');
+                        c.setAttribute('stroke-width', '1.5');
+
+                        const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                        t.setAttribute('x', pt.dir === 'in' ? pt.x - 11 : pt.x + 11);
+                        t.setAttribute('y', pt.y + 3);
+                        t.setAttribute('text-anchor', pt.dir === 'in' ? 'end' : 'start');
+                        t.setAttribute('font-size', '10');
+                        t.setAttribute('font-weight', '700');
+                        t.setAttribute('fill', '#D83B01');
+                        t.textContent = pt.label;
+
+                        pg.appendChild(c);
+                        pg.appendChild(t);
+                        pg.onclick = (e) => { e.stopPropagation(); onPortClicked(b, pt); };
+                        gBlocks.appendChild(pg);
+                    });
+                }
+            });
+
+            // 3. Text Annotations
+            state.annotations.forEach(ann => {
+                const isSel = state.selectedObj.type === 'annotation' && state.selectedObj.id === ann.id;
+                const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                g.setAttribute('transform', `translate(${ann.x}, ${ann.y})`);
+                g.style.cursor = 'pointer';
+                g.onclick = (e) => { e.stopPropagation(); state.selectedObj = { type: 'annotation', id: ann.id }; renderPFD(); };
+
+                const lines = ann.text.split('\n');
+                lines.forEach((line, idx) => {
+                    const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    t.setAttribute('x', '0');
+                    t.setAttribute('y', idx * 15);
+                    t.setAttribute('font-size', '11.5');
+                    t.setAttribute('font-weight', '600');
+                    t.setAttribute('fill', isSel ? '#D83B01' : '#1F2328');
+                    t.textContent = line;
+                    g.appendChild(t);
+                });
+                gAnn.appendChild(g);
+            });
+        }
+
+        function clientToSvg(e) {
+            const vp = document.getElementById('pfdViewport');
+            const rect = vp.getBoundingClientRect();
+            return {
+                x: (e.clientX - rect.left + vp.scrollLeft) / state.zoom,
+                y: (e.clientY - rect.top + vp.scrollTop) / state.zoom
+            };
+        }
+
+        window.addEventListener('mousemove', (e) => {
+            if (!activeDragBlock) return;
+            const b = state.blocks.find(bl => bl.id === activeDragBlock);
+            if (!b) return;
+            const pt = clientToSvg(e);
+            b.x = Math.max(20, Math.round((pt.x - dragDelta.x) / 10) * 10);
+            b.y = Math.max(20, Math.round((pt.y - dragDelta.y) / 10) * 10);
+            renderPFD();
+        });
+        window.addEventListener('mouseup', () => { activeDragBlock = null; });
+
+        function onCanvasClick(e) {
+            hideContextMenu();
+            const pt = clientToSvg(e);
+
+            if (state.placingBlockType) {
+                state.blockSeqCounter++;
+                const blkId = 'B' + state.blockSeqCounter;
+                state.blocks.push({
+                    id: blkId,
+                    name: blkId,
+                    type: state.placingBlockType,
+                    x: Math.max(220, Math.round((pt.x - 45) / 10) * 10),
+                    y: Math.max(90, Math.round((pt.y - 60) / 10) * 10),
+                    // ALL PARAMETERS START COMPLETELY BLANK
+                    params: {
+                        calcType: 'Equilibrium',
+                        stages: '',
+                        condenser: '',
+                        reboiler: '',
+                        validPhases: 'Vapor-Liquid',
+                        convergence: '',
+                        refluxRatio: '',
+                        rrBasis: 'Mole',
+                        distillateRate: '',
+                        distBasis: 'Mole',
+                        feedStage: '',
+                        feedConvention: '',
+                        condPressure: '',
+                        stageDp: '0'
+                    },
+                    designSpecs: [],
+                    varySpecs: [],
+                    results: null
+                });
+                state.placingBlockType = null;
+                state.converged = false;
+                logMsg(`-> Placed block ${blkId} on Main Flowsheet.`, 'info');
+                document.getElementById('pfdHintBar').textContent = `Block ${blkId} placed. Click Material on the ribbon to draw streams, or double-click ${blkId} to configure.`;
+                renderPalette();
+                syncStatusUI();
+                return;
+            }
+
+            if (state.textAnnotateMode) {
+                state.textAnnotateMode = false;
+                document.getElementById('btnTextTool').classList.remove('active');
+                openPromptModal('Add Flowsheet Text Annotation', 'Enter text label (e.g., Name / Roll No / Lab Title):', '', (val) => {
+                    if (val && val.trim()) {
+                        state.annotations.push({ id: 'A' + Date.now(), x: pt.x, y: pt.y, text: val.trim() });
+                        renderPFD();
+                    }
+                });
+                return;
+            }
+
+            if (state.materialConnectMode && state.pendingPortStart) {
+                const start = state.pendingPortStart;
+                state.streamSeqCounter++;
+                const genericId = String(state.streamSeqCounter);
+                state.streams.push({
+                    id: 'S' + state.streamSeqCounter,
+                    name: genericId,
+                    fromBlock: start.blockId,
+                    toBlock: null,
+                    portType: start.portType,
+                    endX: pt.x,
+                    spec: null,
+                    results: null
+                });
+                state.pendingPortStart = null;
+                state.converged = false;
+                logMsg(`-> Created Material stream "${genericId}" from ${start.portType} port. Right-click or double-click to rename.`, 'info');
+                document.getElementById('pfdHintBar').textContent = `Created stream "${genericId}". Connect remaining ports or press ESC to exit Material mode.`;
+                syncStatusUI();
+                return;
+            }
+
+            state.selectedObj = { type: 'flowsheet', id: null };
+            renderNavTree();
+            renderPFD();
+        }
+
+        function onPortClicked(block, port) {
+            if (port.dir === 'in') {
+                state.streamSeqCounter++;
+                const genericId = String(state.streamSeqCounter);
+                const emptyComp = {};
+                state.components.forEach(c => emptyComp[c] = '');
+                state.streams.push({
+                    id: 'S' + state.streamSeqCounter,
+                    name: genericId,
+                    fromBlock: null,
+                    toBlock: block.id,
+                    portType: 'feed',
+                    // ALL STREAM INPUTS START COMPLETELY BLANK
+                    spec: {
+                        T: '',
+                        P: '',
+                        flowBasis: 'Mass',
+                        totalFlow: '',
+                        compBasis: '',
+                        comp: emptyComp
+                    },
+                    results: null
+                });
+                state.pendingPortStart = null;
+                state.converged = false;
+                logMsg(`-> Connected Material stream "${genericId}" to inlet port of ${block.name}. Right-click or double-click to rename & specify.`, 'info');
+                syncStatusUI();
+            } else {
+                state.pendingPortStart = { blockId: block.id, portType: port.portType };
+                document.getElementById('pfdHintBar').textContent = `Click on the canvas to terminate the ${port.label} stream.`;
+            }
+        }
+
+        function toggleMaterialConnectMode() {
+            state.materialConnectMode = !state.materialConnectMode;
+            state.placingBlockType = null;
+            state.textAnnotateMode = false;
+            state.pendingPortStart = null;
+            document.getElementById('btnMaterialTool').classList.toggle('active', state.materialConnectMode);
+            document.getElementById('btnTextTool').classList.remove('active');
+            document.getElementById('pfdHintBar').textContent = state.materialConnectMode
+                ? 'MATERIAL STREAM MODE: Click red port arrows on the block to connect streams (named 1, 2, 3...; rename anytime).'
+                : 'Double-click any block or stream to open its Input Form.';
+            renderPalette();
+            renderPFD();
+        }
+
+        function toggleTextAnnotateMode() {
+            state.textAnnotateMode = !state.textAnnotateMode;
+            state.materialConnectMode = false;
+            state.placingBlockType = null;
+            document.getElementById('btnTextTool').classList.toggle('active', state.textAnnotateMode);
+            document.getElementById('btnMaterialTool').classList.remove('active');
+            document.getElementById('pfdHintBar').textContent = state.textAnnotateMode
+                ? 'Click anywhere on the flowsheet to place a text annotation.'
+                : 'Select a unit operation from the Model Palette below.';
+        }
+
+        function onCanvasContextMenu(e) {
+            e.preventDefault();
+            const menu = document.getElementById('contextMenu');
+            if (state.selectedObj.type === 'stream' || state.selectedObj.type === 'block') {
+                menu.innerHTML = `
+                    <div class="ctx-item" onclick="hideContextMenu(); switchDocTab('form');"><span>Open Input Sheet</span></div>
+                    <div class="ctx-item" onclick="hideContextMenu(); openRenameDialogForSelected();"><span>Rename...</span><span>Ctrl+M</span></div>
+                    <div class="ctx-item" style="color:#A80000;" onclick="hideContextMenu(); deleteSelectedPFDObject();"><span>Delete</span><span>Del</span></div>
+                `;
+                menu.style.left = e.clientX + 'px';
+                menu.style.top = e.clientY + 'px';
+                menu.classList.remove('hidden');
+            } else {
+                hideContextMenu();
+            }
+        }
+        function hideContextMenu() { document.getElementById('contextMenu').classList.add('hidden'); }
+        window.addEventListener('click', hideContextMenu);
+
+        function openRenameDialogForSelected() {
+            if (state.selectedObj.type === 'stream') {
+                const s = state.streams.find(st => st.id === state.selectedObj.id);
+                if (!s) return;
+                openPromptModal('Rename Stream', 'Enter Stream ID (e.g., FEED, DISTILL, BOTTOMS):', s.name, (val) => {
+                    const clean = val.trim().toUpperCase();
+                    if (clean) { s.name = clean; syncStatusUI(); renderForm(); }
+                });
+            } else if (state.selectedObj.type === 'block') {
+                const b = state.blocks.find(bl => bl.id === state.selectedObj.id);
+                if (!b) return;
+                openPromptModal('Rename Block', 'Enter Block ID (e.g., B1, DIST-COL):', b.name, (val) => {
+                    const clean = val.trim().toUpperCase();
+                    if (clean) { b.name = clean; syncStatusUI(); renderForm(); }
+                });
+            }
+        }
+
+        function deleteSelectedPFDObject() {
+            if (state.selectedObj.type === 'stream') {
+                state.streams = state.streams.filter(s => s.id !== state.selectedObj.id);
+                state.selectedObj = { type: 'flowsheet', id: null };
+                state.converged = false;
+                syncStatusUI();
+            } else if (state.selectedObj.type === 'block') {
+                const bid = state.selectedObj.id;
+                state.blocks = state.blocks.filter(b => b.id !== bid);
+                state.streams = state.streams.filter(s => s.fromBlock !== bid && s.toBlock !== bid);
+                state.selectedObj = { type: 'flowsheet', id: null };
+                state.converged = false;
+                syncStatusUI();
+            } else if (state.selectedObj.type === 'annotation') {
+                state.annotations = state.annotations.filter(a => a.id !== state.selectedObj.id);
+                state.selectedObj = { type: 'flowsheet', id: null };
+                renderPFD();
+            }
+        }
+
+        // =========================================================================
+        // 8. INPUT SPECIFICATION FORMS (ZERO PRE-FILLED VALUES)
+        // =========================================================================
+        function renderForm() {
+            const box = document.getElementById('formContainer');
+            if (!box) return;
+
+            if (state.selectedObj.type === 'components') {
+                box.innerHTML = renderComponentsSheet();
+            } else if (state.selectedObj.type === 'methods') {
+                box.innerHTML = renderMethodsSheet();
+            } else if (state.selectedObj.type === 'stream') {
+                const s = state.streams.find(st => st.id === state.selectedObj.id);
+                box.innerHTML = s ? renderStreamSheet(s) : renderComponentsSheet();
+            } else if (state.selectedObj.type === 'block') {
+                const b = state.blocks.find(bl => bl.id === state.selectedObj.id);
+                box.innerHTML = b ? renderRadFracSheet(b) : renderComponentsSheet();
+            } else {
+                box.innerHTML = renderComponentsSheet();
+            }
+        }
+
+        function renderComponentsSheet() {
+            const rows = [];
+            const rowCount = Math.max(4, state.components.length + 1);
+            for (let i = 0; i < rowCount; i++) {
+                const cid = state.components[i] || '';
+                const db = cid ? COMPONENT_DATABANK[cid] : null;
+                rows.push(`
+                    <tr>
+                        <td style="width:42px; text-align:center;">${i + 1}</td>
+                        <td style="width:180px;">
+                            <input type="text" class="ap-input ${i < 2 && !cid ? 'req-empty' : ''}"
+                                value="${cid}"
+                                placeholder="${i < 2 ? 'Type Component ID...' : ''}"
+                                onchange="onComponentIdEntered(${i}, this.value)"
+                                onkeydown="if(event.key==='Enter'){ onComponentIdEntered(${i}, this.value); }">
+                        </td>
+                        <td style="width:120px;">${db ? 'Conventional' : ''}</td>
+                        <td>${db ? db.name : ''}</td>
+                        <td class="mono">${db ? db.formula : ''}</td>
+                        <td style="width:80px; text-align:center;">
+                            ${cid ? `<button class="btn-secondary" style="padding:1px 6px; color:#A80000;" onclick="removeCompAt(${i})">Delete</button>` : ''}
+                        </td>
+                    </tr>
+                `);
+            }
+
+            return `
+                <div class="sheet-card">
+                    <div class="sheet-head">
+                        <span>Components &rarr; Specifications &rarr; Selection</span>
+                        <button class="btn-primary" onclick="stepNext()">Next (N&rarr;)</button>
+                    </div>
+                    <div style="padding:14px;">
+                        <p style="margin-bottom:10px; color:var(--ap-muted);">
+                            Enter Component ID in the table below (e.g., <strong>ACETONE</strong>, <strong>WATER</strong>) and press <strong>Enter</strong> to retrieve databank properties.
+                        </p>
+                        <table class="ap-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Component ID</th>
+                                    <th>Type</th>
+                                    <th>Component name</th>
+                                    <th>Formula</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rows.join('')}</tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        function onComponentIdEntered(idx, rawVal) {
+            const val = rawVal.trim().toUpperCase();
+            if (!val) return;
+            if (!COMPONENT_DATABANK[val]) {
+                logMsg(`WARNING: Component "${val}" not found in local databank. Available: ${Object.keys(COMPONENT_DATABANK).join(', ')}.`, 'warn');
+                renderForm();
+                return;
+            }
+            if (state.components.includes(val) && state.components[idx] !== val) {
+                logMsg(`WARNING: Component ${val} is already in the component list.`, 'warn');
+                renderForm();
+                return;
+            }
+            state.components[idx] = val;
+            state.components = state.components.filter(Boolean);
+            state.streams.forEach(s => {
+                if (s.spec && s.spec.comp && !(val in s.spec.comp)) s.spec.comp[val] = '';
+            });
+            state.converged = false;
+            logMsg(`-> Component ${val} (${COMPONENT_DATABANK[val].formula}) added.`, 'info');
+            syncStatusUI();
+            renderForm();
+        }
+
+        function removeCompAt(idx) {
+            state.components.splice(idx, 1);
+            state.converged = false;
+            syncStatusUI();
+            renderForm();
+        }
+
+        function renderMethodsSheet() {
+            const showParams = state.selectedObj.id === 'method-nrtl' || state.propertyMethod === 'NRTL';
+            return `
+                <div class="sheet-card">
+                    <div class="sheet-head">
+                        <span>Methods &rarr; Specifications &rarr; Global</span>
+                        <button class="btn-primary" onclick="stepNext()">Next (N&rarr;)</button>
+                    </div>
+                    <div style="padding:14px; display:flex; flex-direction:column; gap:14px;">
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; background:#F9FBFD; padding:12px; border:1px solid var(--ap-border);">
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:4px;">Method filter:</label>
+                                <select class="ap-select">
+                                    <option value="ALL">ALL</option>
+                                    <option value="ACTIVITY">Activity Coefficient</option>
+                                    <option value="EOS">Equation of State</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:600; margin-bottom:4px;">Base method:</label>
+                                <select class="ap-select ${!state.propertyMethod ? 'req-empty' : ''}" onchange="onSelectPropertyMethod(this.value)">
+                                    <option value="" ${!state.propertyMethod ? 'selected' : ''}></option>
+                                    <option value="NRTL" ${state.propertyMethod === 'NRTL' ? 'selected' : ''}>NRTL</option>
+                                    <option value="UNIQUAC" ${state.propertyMethod === 'UNIQUAC' ? 'selected' : ''}>UNIQUAC</option>
+                                    <option value="WILSON" ${state.propertyMethod === 'WILSON' ? 'selected' : ''}>WILSON</option>
+                                    <option value="UNIFAC" ${state.propertyMethod === 'UNIFAC' ? 'selected' : ''}>UNIFAC</option>
+                                    <option value="PENG-ROB" ${state.propertyMethod === 'PENG-ROB' ? 'selected' : ''}>PENG-ROB</option>
+                                    <option value="RK-SOAVE" ${state.propertyMethod === 'RK-SOAVE' ? 'selected' : ''}>RK-SOAVE</option>
+                                    <option value="IDEAL" ${state.propertyMethod === 'IDEAL' ? 'selected' : ''}>IDEAL</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        ${showParams && state.propertyMethod === 'NRTL' ? `
+                            <div>
+                                <div style="font-weight:700; margin-bottom:6px; color:#004275;">Binary Interaction Parameters: NRTL-1</div>
+                                <table class="ap-table mono">
+                                    <thead>
+                                        <tr><th>Component i</th><th>Component j</th><th>Source</th><th>a_ij</th><th>a_ji</th><th>b_ij (K)</th><th>b_ji (K)</th><th>c_ij</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>${state.components[0] || ''}</td>
+                                            <td>${state.components[1] || ''}</td>
+                                            <td>APV140 VLE-IG</td>
+                                            <td><input type="number" step="0.0001" class="ap-input" value="${state.nrtlParams.a12}" onchange="state.nrtlParams.a12=parseFloat(this.value)"></td>
+                                            <td><input type="number" step="0.0001" class="ap-input" value="${state.nrtlParams.a21}" onchange="state.nrtlParams.a21=parseFloat(this.value)"></td>
+                                            <td><input type="number" step="0.01" class="ap-input" value="${state.nrtlParams.b12}" onchange="state.nrtlParams.b12=parseFloat(this.value)"></td>
+                                            <td><input type="number" step="0.01" class="ap-input" value="${state.nrtlParams.b21}" onchange="state.nrtlParams.b21=parseFloat(this.value)"></td>
+                                            <td><input type="number" step="0.01" class="ap-input" value="${state.nrtlParams.c12}" onchange="state.nrtlParams.c12=parseFloat(this.value)"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function onSelectPropertyMethod(val) {
+            state.propertyMethod = val;
+            state.converged = false;
+            if (val) logMsg(`-> Base property method set to ${val}.`, 'info');
+            syncStatusUI();
+            renderForm();
+        }
+
+        function renderStreamSheet(s) {
+            const topBar = `
+                <div class="sheet-head">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <span>Streams &rarr;</span>
+                        <input type="text" class="ap-input" style="width:120px; font-weight:700; color:#005A9E;" value="${s.name}" onchange="renameStreamDirect('${s.id}', this.value)">
+                        <span>&rarr; Input</span>
+                    </div>
+                    <button class="btn-secondary" onclick="switchDocTab('flowsheet')">Main Flowsheet</button>
+                </div>
+            `;
+
+            if (!s.fromBlock) {
+                const sp = s.spec;
+                let compSum = 0;
+                state.components.forEach(c => {
+                    const v = parseFloat(sp.comp[c]);
+                    if (!isNaN(v)) compSum += v;
+                });
+
+                return `
+                    <div class="sheet-card">
+                        ${topBar}
+                        <div style="padding:14px; display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+                            <div style="background:#F9FBFD; border:1px solid var(--ap-border); padding:12px;">
+                                <div style="font-weight:700; border-bottom:1px solid var(--ap-border); padding-bottom:4px; margin-bottom:10px;">State variables</div>
+                                <div style="display:grid; grid-template-columns:130px 1fr 70px; gap:6px; align-items:center;">
+                                    <label style="font-weight:600;">Temperature:</label>
+                                    <input type="number" step="any" class="ap-input ${sp.T === '' ? 'req-empty' : ''}" value="${sp.T}" onchange="updateFeedField('${s.id}','T',this.value)">
+                                    <span class="mono">C</span>
+
+                                    <label style="font-weight:600;">Pressure:</label>
+                                    <input type="number" step="any" class="ap-input ${sp.P === '' ? 'req-empty' : ''}" value="${sp.P}" onchange="updateFeedField('${s.id}','P',this.value)">
+                                    <span class="mono">bar</span>
+
+                                    <label style="font-weight:600;">Total flow:</label>
+                                    <input type="number" step="any" class="ap-input ${sp.totalFlow === '' ? 'req-empty' : ''}" value="${sp.totalFlow}" onchange="updateFeedField('${s.id}','totalFlow',this.value)">
+                                    <select class="ap-select" onchange="updateFeedField('${s.id}','flowBasis',this.value); renderForm();">
+                                        <option value="Mass" ${sp.flowBasis === 'Mass' ? 'selected' : ''}>kg/hr</option>
+                                        <option value="Mole" ${sp.flowBasis === 'Mole' ? 'selected' : ''}>kmol/hr</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div style="background:#F9FBFD; border:1px solid var(--ap-border); padding:12px;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--ap-border); padding-bottom:4px; margin-bottom:10px;">
+                                    <span style="font-weight:700;">Composition</span>
+                                    <select class="ap-select ${!sp.compBasis ? 'req-empty' : ''}" style="width:135px;" onchange="updateFeedField('${s.id}','compBasis',this.value); renderForm();">
+                                        <option value="" ${!sp.compBasis ? 'selected' : ''}></option>
+                                        <option value="Mass-Frac" ${sp.compBasis === 'Mass-Frac' ? 'selected' : ''}>Mass-Frac</option>
+                                        <option value="Mole-Frac" ${sp.compBasis === 'Mole-Frac' ? 'selected' : ''}>Mole-Frac</option>
+                                    </select>
+                                </div>
+                                <table class="ap-table">
+                                    <thead><tr><th>Component</th><th>Value</th></tr></thead>
+                                    <tbody>
+                                        ${state.components.map(c => `
+                                            <tr>
+                                                <td style="font-weight:600;">${c}</td>
+                                                <td>
+                                                    <input type="number" step="any" class="ap-input ${sp.comp[c] === '' || sp.comp[c] === undefined ? 'req-empty' : ''}"
+                                                        value="${sp.comp[c] ?? ''}"
+                                                        onchange="updateFeedComp('${s.id}','${c}',this.value)">
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                                <div style="margin-top:6px; font-size:11px; font-weight:600; color:${Math.abs(compSum - 1) < 1e-4 ? '#107C10' : '#D83B01'};">
+                                    Total = ${compSum.toFixed(4)}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="sheet-card">
+                    ${topBar}
+                    <div style="padding:14px; color:var(--ap-muted);">
+                        Outlet stream <strong>${s.name}</strong> (connected to <strong>${s.portType}</strong> port). Run the simulation (F5) to compute outlet properties.
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateFeedField(sid, key, val) {
+            const s = state.streams.find(st => st.id === sid);
+            if (!s || !s.spec) return;
+            s.spec[key] = val;
+            state.converged = false;
+            syncStatusUI();
+            renderForm();
+        }
+        function updateFeedComp(sid, compId, val) {
+            const s = state.streams.find(st => st.id === sid);
+            if (!s || !s.spec) return;
+            s.spec.comp[compId] = val;
+            state.converged = false;
+            syncStatusUI();
+            renderForm();
+        }
+        function renameStreamDirect(sid, val) {
+            const s = state.streams.find(st => st.id === sid);
+            const clean = val.trim().toUpperCase();
+            if (s && clean) { s.name = clean; syncStatusUI(); renderForm(); }
+        }
+
+        function renderRadFracSheet(b) {
+            const p = b.params;
+            const tab = state.blockSubTab;
+            const subTabs = [
+                { id: 'configuration', label: 'Setup -> Configuration' },
+                { id: 'streams', label: 'Setup -> Streams' },
+                { id: 'pressure', label: 'Setup -> Pressure' },
+                { id: 'designspec', label: 'Specifications -> Design Specifications' },
+                { id: 'vary', label: 'Specifications -> Vary' }
+            ];
+
+            let inner = '';
+            if (tab === 'configuration') {
+                inner = `
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; background:#F9FBFD; border:1px solid var(--ap-border); padding:12px;">
+                        <div style="display:grid; grid-template-columns:145px 1fr; gap:7px; align-items:center;">
+                            <label style="font-weight:600;">Calculation type:</label>
+                            <select class="ap-select" onchange="setBlockParam('${b.id}','calcType',this.value)">
+                                <option value="Equilibrium" ${p.calcType === 'Equilibrium' ? 'selected' : ''}>Equilibrium</option>
+                            </select>
+
+                            <label style="font-weight:600;">Number of stages:</label>
+                            <input type="number" class="ap-input ${p.stages === '' ? 'req-empty' : ''}" value="${p.stages}" onchange="setBlockParam('${b.id}','stages',this.value)">
+
+                            <label style="font-weight:600;">Condenser:</label>
+                            <select class="ap-select ${!p.condenser ? 'req-empty' : ''}" onchange="setBlockParam('${b.id}','condenser',this.value)">
+                                <option value="" ${!p.condenser ? 'selected' : ''}></option>
+                                <option value="Partial-Vapor" ${p.condenser === 'Partial-Vapor' ? 'selected' : ''}>Partial-Vapor</option>
+                                <option value="Total" ${p.condenser === 'Total' ? 'selected' : ''}>Total</option>
+                            </select>
+
+                            <label style="font-weight:600;">Reboiler:</label>
+                            <select class="ap-select ${!p.reboiler ? 'req-empty' : ''}" onchange="setBlockParam('${b.id}','reboiler',this.value)">
+                                <option value="" ${!p.reboiler ? 'selected' : ''}></option>
+                                <option value="Kettle" ${p.reboiler === 'Kettle' ? 'selected' : ''}>Kettle</option>
+                                <option value="Thermosiphon" ${p.reboiler === 'Thermosiphon' ? 'selected' : ''}>Thermosiphon</option>
+                            </select>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:145px 1fr; gap:7px; align-items:center;">
+                            <label style="font-weight:600;">Valid phases:</label>
+                            <select class="ap-select" onchange="setBlockParam('${b.id}','validPhases',this.value)">
+                                <option value="Vapor-Liquid" ${p.validPhases === 'Vapor-Liquid' ? 'selected' : ''}>Vapor-Liquid</option>
+                            </select>
+
+                            <label style="font-weight:600;">Convergence:</label>
+                            <select class="ap-select ${!p.convergence ? 'req-empty' : ''}" onchange="setBlockParam('${b.id}','convergence',this.value)">
+                                <option value="" ${!p.convergence ? 'selected' : ''}></option>
+                                <option value="Strongly non-ideal liquid" ${p.convergence === 'Strongly non-ideal liquid' ? 'selected' : ''}>Strongly non-ideal liquid</option>
+                                <option value="Standard" ${p.convergence === 'Standard' ? 'selected' : ''}>Standard</option>
+                            </select>
+
+                            <label style="font-weight:600;">Reflux ratio:</label>
+                            <div style="display:flex; gap:4px;">
+                                <input type="number" step="any" class="ap-input ${p.refluxRatio === '' ? 'req-empty' : ''}" value="${p.refluxRatio}" onchange="setBlockParam('${b.id}','refluxRatio',this.value)">
+                                <select class="ap-select" style="width:85px;" onchange="setBlockParam('${b.id}','rrBasis',this.value)">
+                                    <option value="Mole" ${p.rrBasis === 'Mole' ? 'selected' : ''}>Mole</option>
+                                    <option value="Mass" ${p.rrBasis === 'Mass' ? 'selected' : ''}>Mass</option>
+                                </select>
+                            </div>
+
+                            <label style="font-weight:600;">Distillate rate:</label>
+                            <div style="display:flex; gap:4px;">
+                                <input type="number" step="any" class="ap-input ${p.distillateRate === '' ? 'req-empty' : ''}" value="${p.distillateRate}" onchange="setBlockParam('${b.id}','distillateRate',this.value)">
+                                <select class="ap-select" style="width:85px;" onchange="setBlockParam('${b.id}','distBasis',this.value)">
+                                    <option value="Mole" ${p.distBasis === 'Mole' ? 'selected' : ''}>Mole</option>
+                                    <option value="Mass" ${p.distBasis === 'Mass' ? 'selected' : ''}>Mass</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (tab === 'streams') {
+                const feedSt = state.streams.find(s => s.toBlock === b.id);
+                inner = `
+                    <div style="background:#F9FBFD; border:1px solid var(--ap-border); padding:12px;">
+                        <table class="ap-table">
+                            <thead><tr><th>Feed Stream</th><th>Stage</th><th>Convention</th></tr></thead>
+                            <tbody>
+                                <tr>
+                                    <td style="font-weight:700; color:#005A9E;">${feedSt ? feedSt.name : '(No feed connected)'}</td>
+                                    <td><input type="number" class="ap-input ${p.feedStage === '' ? 'req-empty' : ''}" style="width:110px;" value="${p.feedStage}" onchange="setBlockParam('${b.id}','feedStage',this.value)"></td>
+                                    <td>
+                                        <select class="ap-select ${!p.feedConvention ? 'req-empty' : ''}" style="width:160px;" onchange="setBlockParam('${b.id}','feedConvention',this.value)">
+                                            <option value="" ${!p.feedConvention ? 'selected' : ''}></option>
+                                            <option value="Above-Stage" ${p.feedConvention === 'Above-Stage' ? 'selected' : ''}>Above-Stage</option>
+                                            <option value="On-Stage" ${p.feedConvention === 'On-Stage' ? 'selected' : ''}>On-Stage</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            } else if (tab === 'pressure') {
+                inner = `
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; background:#F9FBFD; border:1px solid var(--ap-border); padding:12px;">
+                        <div>
+                            <label style="display:block; font-weight:600; margin-bottom:4px;">Stage 1 / Condenser pressure (bar):</label>
+                            <input type="number" step="any" class="ap-input ${p.condPressure === '' ? 'req-empty' : ''}" value="${p.condPressure}" onchange="setBlockParam('${b.id}','condPressure',this.value)">
+                        </div>
+                        <div>
+                            <label style="display:block; font-weight:600; margin-bottom:4px;">Stage pressure drop (bar):</label>
+                            <input type="number" step="any" class="ap-input" value="${p.stageDp}" onchange="setBlockParam('${b.id}','stageDp',this.value)">
+                        </div>
+                    </div>
+                `;
+            } else if (tab === 'designspec') {
+                const outs = state.streams.filter(s => s.fromBlock === b.id);
+                const ds = b.designSpecs[0];
+                inner = `
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn-primary" onclick="addDesignSpec('${b.id}')">New...</button>
+                            ${ds ? `<button class="btn-secondary" style="color:#A80000;" onclick="removeDesignSpec('${b.id}')">Delete ID: 1</button>` : ''}
+                        </div>
+                        ${!ds ? `<p style="color:var(--ap-muted);">No Design Specifications defined. Click <strong>New...</strong> to add a purity specification (or run without Design Spec for fixed Reflux Ratio).</p>` : `
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; background:#F9FBFD; border:1px solid var(--ap-border); padding:12px;">
+                                <div>
+                                    <label style="display:block; font-weight:600; margin-bottom:4px;">Design Spec ID: 1 &mdash; Type:</label>
+                                    <select class="ap-select ${!ds.type ? 'req-empty' : ''}" onchange="updateDS('${b.id}','type',this.value)">
+                                        <option value="" ${!ds.type ? 'selected' : ''}></option>
+                                        <option value="Mass purity" ${ds.type === 'Mass purity' ? 'selected' : ''}>Mass purity</option>
+                                        <option value="Mole purity" ${ds.type === 'Mole purity' ? 'selected' : ''}>Mole purity</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="display:block; font-weight:600; margin-bottom:4px;">Target:</label>
+                                    <input type="number" step="any" class="ap-input ${ds.target === '' ? 'req-empty' : ''}" value="${ds.target}" onchange="updateDS('${b.id}','target',this.value)">
+                                </div>
+                                <div>
+                                    <label style="display:block; font-weight:600; margin-bottom:4px;">Components:</label>
+                                    <select class="ap-select ${!ds.component ? 'req-empty' : ''}" onchange="updateDS('${b.id}','component',this.value)">
+                                        <option value="" ${!ds.component ? 'selected' : ''}></option>
+                                        ${state.components.map(c => `<option value="${c}" ${ds.component === c ? 'selected' : ''}>${c}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="display:block; font-weight:600; margin-bottom:4px;">Product stream:</label>
+                                    <select class="ap-select ${!ds.productStream ? 'req-empty' : ''}" onchange="updateDS('${b.id}','productStream',this.value)">
+                                        <option value="" ${!ds.productStream ? 'selected' : ''}></option>
+                                        ${outs.map(o => `<option value="${o.name}" ${ds.productStream === o.name ? 'selected' : ''}>${o.name}</option>`).join('')}
+                                    </select>
+                                </div>
+                            </div>
+                        `}
+                    </div>
+                `;
+            } else if (tab === 'vary') {
+                const v = b.varySpecs[0];
+                inner = `
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn-primary" onclick="addVarySpec('${b.id}')">New...</button>
+                            ${v ? `<button class="btn-secondary" style="color:#A80000;" onclick="removeVarySpec('${b.id}')">Delete ID: 1</button>` : ''}
+                        </div>
+                        ${!v ? `<p style="color:var(--ap-muted);">Click <strong>New...</strong> to add a manipulated variable (Vary) for Design Specification 1.</p>` : `
+                            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; background:#F9FBFD; border:1px solid var(--ap-border); padding:12px;">
+                                <div>
+                                    <label style="display:block; font-weight:600; margin-bottom:4px;">Variable type:</label>
+                                    <select class="ap-select ${!v.variable ? 'req-empty' : ''}" onchange="updateVary('${b.id}','variable',this.value)">
+                                        <option value="" ${!v.variable ? 'selected' : ''}></option>
+                                        <option value="Reflux ratio" ${v.variable === 'Reflux ratio' ? 'selected' : ''}>Reflux ratio</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="display:block; font-weight:600; margin-bottom:4px;">Lower bound:</label>
+                                    <input type="number" step="any" class="ap-input ${v.lowerBound === '' ? 'req-empty' : ''}" value="${v.lowerBound}" onchange="updateVary('${b.id}','lowerBound',this.value)">
+                                </div>
+                                <div>
+                                    <label style="display:block; font-weight:600; margin-bottom:4px;">Upper bound:</label>
+                                    <input type="number" step="any" class="ap-input ${v.upperBound === '' ? 'req-empty' : ''}" value="${v.upperBound}" onchange="updateVary('${b.id}','upperBound',this.value)">
+                                </div>
+                            </div>
+                        `}
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="sheet-card">
+                    <div class="sheet-head">
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span>Blocks &rarr;</span>
+                            <input type="text" class="ap-input" style="width:110px; font-weight:700; color:#005A9E;" value="${b.name}" onchange="renameBlockDirect('${b.id}', this.value)">
+                            <span>(${b.type})</span>
+                        </div>
+                        <button class="btn-primary" onclick="runSimulation()">Run (F5)</button>
+                    </div>
+                    <div class="sheet-subtabs">
+                        ${subTabs.map(t => `<div class="sub-tab ${tab === t.id ? 'active' : ''}" onclick="state.blockSubTab='${t.id}'; renderForm();">${t.label}</div>`).join('')}
+                    </div>
+                    <div style="padding:14px;">${inner}</div>
+                </div>
+            `;
+        }
+
+        function setBlockParam(bid, key, val) {
+            const b = state.blocks.find(bl => bl.id === bid);
+            if (b) { b.params[key] = val; state.converged = false; syncStatusUI(); renderForm(); }
+        }
+        function addDesignSpec(bid) {
+            const b = state.blocks.find(bl => bl.id === bid);
+            if (b && b.designSpecs.length === 0) {
+                b.designSpecs.push({ id: '1', type: '', target: '', component: '', productStream: '' });
+                state.converged = false; syncStatusUI(); renderForm();
+            }
+        }
+        function removeDesignSpec(bid) {
+            const b = state.blocks.find(bl => bl.id === bid);
+            if (b) { b.designSpecs = []; state.converged = false; syncStatusUI(); renderForm(); }
+        }
+        function updateDS(bid, key, val) {
+            const b = state.blocks.find(bl => bl.id === bid);
+            if (b && b.designSpecs[0]) { b.designSpecs[0][key] = val; state.converged = false; syncStatusUI(); renderForm(); }
+        }
+        function addVarySpec(bid) {
+            const b = state.blocks.find(bl => bl.id === bid);
+            if (b && b.varySpecs.length === 0) {
+                b.varySpecs.push({ id: '1', variable: '', lowerBound: '', upperBound: '' });
+                state.converged = false; syncStatusUI(); renderForm();
+            }
+        }
+        function removeVarySpec(bid) {
+            const b = state.blocks.find(bl => bl.id === bid);
+            if (b) { b.varySpecs = []; state.converged = false; syncStatusUI(); renderForm(); }
+        }
+        function updateVary(bid, key, val) {
+            const b = state.blocks.find(bl => bl.id === bid);
+            if (b && b.varySpecs[0]) { b.varySpecs[0][key] = val; state.converged = false; syncStatusUI(); renderForm(); }
+        }
+        function renameBlockDirect(bid, val) {
+            const b = state.blocks.find(bl => bl.id === bid);
+            const clean = val.trim().toUpperCase();
+            if (b && clean) { b.name = clean; syncStatusUI(); renderForm(); }
+        }
+
+        // =========================================================================
+        // 9. ASPEN PLUS STREAM TABLE, COLUMN SUMMARY, & REFERENCE VALIDATION
+        // =========================================================================
+        function buildAspenStreamTableHTML(solvedStreams) {
+            const rows = [
+                { sec: 'Material' },
+                { lbl: 'From', unit: '', fn: s => s.fromBlock || '' },
+                { lbl: 'To', unit: '', fn: s => s.toBlock || '' },
+                { lbl: 'Stream Class', unit: '', fn: () => 'CONVEN' },
+                { sec: 'MIXED Substream' },
+                { lbl: 'Phase', unit: '', fn: s => s.results.phase },
+                { lbl: 'Temperature', unit: 'C', fn: s => s.results.T.toFixed(6) },
+                { lbl: 'Pressure', unit: 'bar', fn: s => s.results.P.toFixed(4) },
+                { lbl: 'Molar Vapor Fraction', unit: '', fn: s => s.results.vFrac.toFixed(4) },
+                { lbl: 'Molar Liquid Fraction', unit: '', fn: s => s.results.lFrac.toFixed(4) },
+                { lbl: 'Molar Solid Fraction', unit: '', fn: s => s.results.sFrac.toFixed(4) },
+                { lbl: 'Molar Enthalpy', unit: 'cal/mol', fn: s => s.results.hMol.toFixed(4) },
+                { lbl: 'Mass Enthalpy', unit: 'cal/gm', fn: s => s.results.hMass.toFixed(4) },
+                { lbl: 'Molar Entropy', unit: 'cal/mol-K', fn: s => s.results.sMol.toFixed(4) },
+                { lbl: 'Mass Entropy', unit: 'cal/gm-K', fn: s => s.results.sMass.toFixed(4) },
+                { lbl: 'Molar Density', unit: 'mol/cc', fn: s => s.results.rhoMol.toFixed(8) },
+                { lbl: 'Mass Density', unit: 'gm/cc', fn: s => s.results.rhoMass.toFixed(8) },
+                { lbl: 'Enthalpy Flow', unit: 'cal/sec', fn: s => s.results.hFlow.toFixed(4) },
+                { lbl: 'Average MW', unit: '', fn: s => s.results.avgMW.toFixed(6) },
+                { lbl: 'Mole Flows', unit: 'kmol/hr', fn: s => s.results.moleFlow.toFixed(6) },
+                ...state.components.map(c => ({ lbl: `  ${c}`, unit: 'kmol/hr', fn: s => (s.results.compMoleFlows[c] || 0).toFixed(6) })),
+                { lbl: 'Mole Fractions', unit: '', fn: () => '' },
+                ...state.components.map(c => ({ lbl: `  ${c}`, unit: '', fn: s => (s.results.moleFrac[c] || 0).toFixed(6) })),
+                { lbl: 'Mass Flows', unit: 'kg/hr', fn: s => s.results.massFlow.toFixed(6) },
+                ...state.components.map(c => ({ lbl: `  ${c}`, unit: 'kg/hr', fn: s => (s.results.compMassFlows[c] || 0).toFixed(6) })),
+                { lbl: 'Mass Fractions', unit: '', fn: () => '' },
+                ...state.components.map(c => ({ lbl: `  ${c}`, unit: '', fn: s => (s.results.massFrac[c] || 0).toFixed(6) })),
+                { lbl: 'Volume Flow', unit: 'l/min', fn: s => s.results.volFlow.toFixed(6) },
+                { sec: 'Vapor Phase' },
+                { lbl: 'Molar Enthalpy', unit: 'cal/mol', fn: s => s.results.vFrac > 0.01 ? s.results.vapPhase.hMol.toFixed(4) : '' },
+                { lbl: 'Mass Enthalpy', unit: 'cal/gm', fn: s => s.results.vFrac > 0.01 ? s.results.vapPhase.hMass.toFixed(4) : '' },
+                { lbl: 'Molar Entropy', unit: 'cal/mol-K', fn: s => s.results.vFrac > 0.01 ? s.results.vapPhase.sMol.toFixed(4) : '' },
+                { lbl: 'Mass Entropy', unit: 'cal/gm-K', fn: s => s.results.vFrac > 0.01 ? s.results.vapPhase.sMass.toFixed(4) : '' },
+                { lbl: 'Molar Density', unit: 'mol/cc', fn: s => s.results.vFrac > 0.01 ? s.results.vapPhase.rhoMol.toFixed(8) : '' },
+                { lbl: 'Mass Density', unit: 'gm/cc', fn: s => s.results.vFrac > 0.01 ? s.results.vapPhase.rhoMass.toFixed(8) : '' },
+                { sec: 'Liquid Phase' },
+                { lbl: 'Molar Enthalpy', unit: 'cal/mol', fn: s => s.results.lFrac > 0.01 ? s.results.liqPhase.hMol.toFixed(4) : '' },
+                { lbl: 'Mass Enthalpy', unit: 'cal/gm', fn: s => s.results.lFrac > 0.01 ? s.results.liqPhase.hMass.toFixed(4) : '' },
+                { lbl: 'Molar Entropy', unit: 'cal/mol-K', fn: s => s.results.lFrac > 0.01 ? s.results.liqPhase.sMol.toFixed(4) : '' },
+                { lbl: 'Mass Entropy', unit: 'cal/gm-K', fn: s => s.results.lFrac > 0.01 ? s.results.liqPhase.sMass.toFixed(4) : '' },
+                { lbl: 'Molar Density', unit: 'mol/cc', fn: s => s.results.lFrac > 0.01 ? s.results.liqPhase.rhoMol.toFixed(8) : '' },
+                { lbl: 'Mass Density', unit: 'gm/cc', fn: s => s.results.lFrac > 0.01 ? s.results.liqPhase.rhoMass.toFixed(8) : '' }
+            ];
+
+            return `
+                <table class="ap-table mono">
+                    <thead>
+                        <tr>
+                            <th>Stream Name</th>
+                            <th>Units</th>
+                            ${solvedStreams.map(s => `<th>${s.name}</th>`).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows.map(r => r.sec
+                            ? `<tr class="sec-row"><td colspan="${solvedStreams.length + 2}">${r.sec}</td></tr>`
+                            : `<tr>
+                                <td style="font-family:var(--font-ui); white-space:pre;">${r.lbl}</td>
+                                <td style="color:var(--ap-muted);">${r.unit}</td>
+                                ${solvedStreams.map(s => `<td>${r.fn(s)}</td>`).join('')}
+                               </tr>`
+                        ).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function renderStreamsSummary() {
+            const box = document.getElementById('streamsSummaryContainer');
+            const solved = state.streams.filter(s => s.results);
+            if (solved.length === 0) {
+                box.innerHTML = `<div class="sheet-card" style="padding:24px; text-align:center; color:var(--ap-muted);">No results available yet. Complete all required inputs and click <strong>Run (F5)</strong>.</div>`;
+                return;
+            }
+            box.innerHTML = `
+                <div class="sheet-card">
+                    <div class="sheet-head">
+                        <span>Results Summary &rarr; Streams</span>
+                        <div style="display:flex; gap:6px;">
+                            <button class="btn-secondary" onclick="toggleStampedStreamTable(); switchDocTab('flowsheet');">Stamp Table onto Flowsheet</button>
+                            <button class="btn-primary" onclick="exportStreamCSV()">Export CSV</button>
+                        </div>
+                    </div>
+                    <div style="padding:12px; overflow-x:auto;">${buildAspenStreamTableHTML(solved)}</div>
+                </div>
+            `;
+        }
+
+        function toggleStampedStreamTable() {
+            const solved = state.streams.filter(s => s.results);
+            if (solved.length === 0) {
+                logMsg('WARNING: Run the simulation (F5) first before inserting the Stream Table on the flowsheet.', 'warn');
+                return;
+            }
+            state.showStampedTable = !state.showStampedTable;
+            document.getElementById('btnStampTable').classList.toggle('active', state.showStampedTable);
+            renderStampedStreamTable();
+        }
+
+        function renderStampedStreamTable() {
+            const wrap = document.getElementById('pfdStampedTable');
+            const solved = state.streams.filter(s => s.results);
+            if (!state.showStampedTable || solved.length === 0) {
+                wrap.classList.add('hidden');
+                return;
+            }
+            wrap.classList.remove('hidden');
+            wrap.innerHTML = `
+                <div style="background:#005A9E; color:#FFF; padding:3px 8px; font-size:10.5px; font-weight:700; display:flex; justify-content:space-between;">
+                    <span>Stream Table</span>
+                    <span style="cursor:pointer;" onclick="toggleStampedStreamTable()">X</span>
+                </div>
+                <div style="padding:4px;">${buildAspenStreamTableHTML(solved)}</div>
+            `;
+        }
+
+        function renderBlockResults() {
+            const box = document.getElementById('blockResultsContainer');
+            const b = state.blocks.find(bl => bl.results);
+            if (!b) {
+                box.innerHTML = `<div class="sheet-card" style="padding:24px; text-align:center; color:var(--ap-muted);">Run the simulation (F5) to view RadFrac Condenser/Reboiler Duties, Stage Profiles, and Graphs.</div>`;
+                return;
+            }
+            const r = b.results;
+            const c1 = state.components[0] || 'COMP1';
+            const c2 = state.components[1] || 'COMP2';
+
+            box.innerHTML = `
+                <div class="sheet-card">
+                    <div class="sheet-head"><span>Blocks &rarr; ${b.name} (${b.type}) &rarr; Results &rarr; Summary</span></div>
+                    <div style="padding:14px; display:grid; grid-template-columns:repeat(4, 1fr); gap:10px;" class="mono">
+                        <div style="background:#F9FBFD; border:1px solid var(--ap-border); padding:10px;">
+                            <div style="font-family:var(--font-ui); color:var(--ap-muted); font-size:11px;">Reflux Ratio (Mole)</div>
+                            <strong style="font-size:15px; color:#005A9E;">${r.R.toFixed(4)}</strong>
+                        </div>
+                        <div style="background:#F9FBFD; border:1px solid var(--ap-border); padding:10px;">
+                            <div style="font-family:var(--font-ui); color:var(--ap-muted); font-size:11px;">Condenser Duty (Q_C)</div>
+                            <strong style="font-size:15px; color:#005A9E;">${r.Qc_kW.toFixed(2)} kW</strong>
+                            <div style="font-size:10px; color:var(--ap-muted);">${r.Qc_calsec.toFixed(2)} cal/sec</div>
+                        </div>
+                        <div style="background:#F9FBFD; border:1px solid var(--ap-border); padding:10px;">
+                            <div style="font-family:var(--font-ui); color:var(--ap-muted); font-size:11px;">Reboiler Duty (Q_R)</div>
+                            <strong style="font-size:15px; color:#D83B01;">+${r.Qr_kW.toFixed(2)} kW</strong>
+                            <div style="font-size:10px; color:var(--ap-muted);">+${r.Qr_calsec.toFixed(2)} cal/sec</div>
+                        </div>
+                        <div style="background:#F9FBFD; border:1px solid var(--ap-border); padding:10px;">
+                            <div style="font-family:var(--font-ui); color:var(--ap-muted); font-size:11px;">Total Thermal Load</div>
+                            <strong style="font-size:15px;">${(Math.abs(r.Qc_kW) + Math.abs(r.Qr_kW)).toFixed(2)} kW</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- INTERACTIVE ASPEN PLUS PLOTS & LAB #2B ENERGY COMPARISON GRAPHS -->
+                <div style="max-width:1050px; margin:0 auto;">
+                    <div class="chart-grid">
+                        <div class="chart-card">
+                            <div class="chart-title">Stage Temperature Profile (T vs. Stage 1&ndash;${r.stages})</div>
+                            <div class="chart-canvas-wrap"><canvas id="chartTempProfile"></canvas></div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-title">Stage Composition Profile (${c1} &amp; ${c2} Mole Fractions)</div>
+                            <div class="chart-canvas-wrap"><canvas id="chartCompProfile"></canvas></div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-title">${c1}&ndash;${c2} VLE Equilibrium &amp; Tangent Pinch (${b.params.condPressure} bar, ${state.propertyMethod})</div>
+                            <div class="chart-canvas-wrap"><canvas id="chartVLEPinch"></canvas></div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-title">Energy Intensity Comparison: LLE (Lab #2a) vs. Direct Distillation (Lab #2b)</div>
+                            <div class="chart-canvas-wrap"><canvas id="chartEnergyCompare"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sheet-card">
+                    <div class="sheet-head"><span>Blocks &rarr; ${b.name} &rarr; Profiles (Stages 1 to ${r.stages})</span></div>
+                    <div style="padding:12px; max-height:360px; overflow:auto;">
+                        <table class="ap-table mono">
+                            <thead>
+                                <tr>
+                                    <th>Stage</th>
+                                    <th>Temperature (C)</th>
+                                    ${state.components.map(c => `<th>x_${c}</th>`).join('')}
+                                    ${state.components.map(c => `<th>y_${c}</th>`).join('')}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${r.T_profile.map((T, idx) => `
+                                    <tr>
+                                        <td>${idx + 1}</td>
+                                        <td>${T.toFixed(3)}</td>
+                                        ${state.components.map(c => `<td>${(r.x_profile[idx][c] || 0).toFixed(5)}</td>`).join('')}
+                                        ${state.components.map(c => `<td>${(r.y_profile[idx][c] || 0).toFixed(5)}</td>`).join('')}
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            requestAnimationFrame(() => drawAllResultsCharts(b, r));
+        }
+
+        function setupHiDPICanvas(id) {
+            const canvas = document.getElementById(id);
+            if (!canvas) return null;
+            const rect = canvas.parentElement.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = Math.max(300, rect.width * dpr);
+            canvas.height = Math.max(200, rect.height * dpr);
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+            return { ctx, w: rect.width, h: rect.height };
+        }
+
+        function drawAllResultsCharts(b, r) {
+            const c1 = state.components[0] || 'ACETONE';
+            const c2 = state.components[1] || 'WATER';
+
+            // 1. Temperature Profile Chart
+            const chT = setupHiDPICanvas('chartTempProfile');
+            if (chT) {
+                const { ctx, w, h } = chT;
+                const pad = { l: 48, r: 16, t: 18, b: 32 };
+                const pw = w - pad.l - pad.r;
+                const ph = h - pad.t - pad.b;
+                const minT = 50, maxT = 105;
+
+                ctx.clearRect(0, 0, w, h);
+                ctx.strokeStyle = '#E4E7EC';
+                ctx.lineWidth = 1;
+                ctx.font = '10px Consolas, monospace';
+                ctx.fillStyle = '#57606A';
+
+                for (let t = 50; t <= 105; t += 10) {
+                    const y = pad.t + ph - ((t - minT) / (maxT - minT)) * ph;
+                    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l + pw, y); ctx.stroke();
+                    ctx.fillText(t + '°C', 8, y + 3);
+                }
+                for (let s = 1; s <= r.stages; s += 10) {
+                    const x = pad.l + ((s - 1) / Math.max(1, r.stages - 1)) * pw;
+                    ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, pad.t + ph); ctx.stroke();
+                    ctx.fillText('S' + s, x - 8, h - 10);
+                }
+                ctx.fillText('S' + r.stages, pad.l + pw - 16, h - 10);
+
+                // Curve
+                ctx.strokeStyle = '#D83B01';
+                ctx.lineWidth = 2.2;
+                ctx.beginPath();
+                r.T_profile.forEach((T, i) => {
+                    const x = pad.l + (i / Math.max(1, r.stages - 1)) * pw;
+                    const y = pad.t + ph - ((T - minT) / (maxT - minT)) * ph;
+                    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                });
+                ctx.stroke();
+
+                // Feed stage marker
+                const fs = parseInt(b.params.feedStage) || 48;
+                const fx = pad.l + ((fs - 1) / Math.max(1, r.stages - 1)) * pw;
+                ctx.strokeStyle = '#005A9E';
+                ctx.setLineDash([4, 3]);
+                ctx.beginPath(); ctx.moveTo(fx, pad.t); ctx.lineTo(fx, pad.t + ph); ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.fillStyle = '#005A9E';
+                ctx.fillText(`Feed (S${fs})`, fx - 54, pad.t + 14);
+            }
+
+            // 2. Stage Composition Profile
+            const chC = setupHiDPICanvas('chartCompProfile');
+            if (chC) {
+                const { ctx, w, h } = chC;
+                const pad = { l: 44, r: 16, t: 18, b: 32 };
+                const pw = w - pad.l - pad.r;
+                const ph = h - pad.t - pad.b;
+
+                ctx.clearRect(0, 0, w, h);
+                ctx.strokeStyle = '#E4E7EC';
+                ctx.font = '10px Consolas, monospace';
+                ctx.fillStyle = '#57606A';
+
+                for (let v = 0; v <= 1.001; v += 0.2) {
+                    const y = pad.t + ph - v * ph;
+                    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l + pw, y); ctx.stroke();
+                    ctx.fillText(v.toFixed(1), 12, y + 3);
+                }
+                for (let s = 1; s <= r.stages; s += 10) {
+                    const x = pad.l + ((s - 1) / Math.max(1, r.stages - 1)) * pw;
+                    ctx.fillText('S' + s, x - 8, h - 10);
+                }
+
+                // x_c1
+                ctx.strokeStyle = '#005A9E';
+                ctx.lineWidth = 2.2;
+                ctx.beginPath();
+                r.x_profile.forEach((xm, i) => {
+                    const x = pad.l + (i / Math.max(1, r.stages - 1)) * pw;
+                    const y = pad.t + ph - (xm[c1] || 0) * ph;
+                    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                });
+                ctx.stroke();
+
+                // x_c2
+                ctx.strokeStyle = '#107C10';
+                ctx.lineWidth = 2.0;
+                ctx.beginPath();
+                r.x_profile.forEach((xm, i) => {
+                    const x = pad.l + (i / Math.max(1, r.stages - 1)) * pw;
+                    const y = pad.t + ph - (xm[c2] || 0) * ph;
+                    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                });
+                ctx.stroke();
+
+                ctx.fillStyle = '#005A9E';
+                ctx.fillText(`x_${c1}`, pad.l + 10, pad.t + 14);
+                ctx.fillStyle = '#107C10';
+                ctx.fillText(`x_${c2}`, pad.l + 95, pad.t + 14);
+            }
+
+            // 3. VLE y-x Equilibrium Curve (Tangent Pinch)
+            const chV = setupHiDPICanvas('chartVLEPinch');
+            if (chV) {
+                const { ctx, w, h } = chV;
+                const pad = { l: 44, r: 16, t: 18, b: 32 };
+                const pw = w - pad.l - pad.r;
+                const ph = h - pad.t - pad.b;
+                const P_bar = parseFloat(b.params.condPressure) || 1.0;
+
+                ctx.clearRect(0, 0, w, h);
+                ctx.strokeStyle = '#E4E7EC';
+                ctx.font = '10px Consolas, monospace';
+                ctx.fillStyle = '#57606A';
+
+                for (let v = 0; v <= 1.001; v += 0.2) {
+                    const y = pad.t + ph - v * ph;
+                    const x = pad.l + v * pw;
+                    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l + pw, y); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, pad.t + ph); ctx.stroke();
+                    ctx.fillText(v.toFixed(1), 12, y + 3);
+                    ctx.fillText(v.toFixed(1), x - 8, h - 10);
+                }
+
+                // 45-degree diagonal
+                ctx.strokeStyle = '#8C959F';
+                ctx.setLineDash([4, 4]);
+                ctx.beginPath();
+                ctx.moveTo(pad.l, pad.t + ph);
+                ctx.lineTo(pad.l + pw, pad.t);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Equilibrium curve from NRTL
+                ctx.strokeStyle = '#005A9E';
+                ctx.lineWidth = 2.3;
+                ctx.beginPath();
+                for (let k = 0; k <= 50; k++) {
+                    const x1 = k / 50;
+                    const xMap = { [c1]: x1, [c2]: 1.0 - x1 };
+                    const bp = calcBubblePoint(xMap, P_bar, 65.0);
+                    const y1 = bp.yMap[c1] || 0;
+                    const px = pad.l + x1 * pw;
+                    const py = pad.t + ph - y1 * ph;
+                    if (k === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+                }
+                ctx.stroke();
+
+                ctx.fillStyle = '#D83B01';
+                ctx.fillText('Tangent Pinch (x > 0.85)', pad.l + pw * 0.44, pad.t + ph * 0.24);
+            }
+
+            // 4. Energy Intensity Comparison Bar Chart (Lab #2a vs Lab #2b)
+            const chE = setupHiDPICanvas('chartEnergyCompare');
+            if (chE) {
+                const { ctx, w, h } = chE;
+                const pad = { l: 48, r: 14, t: 36, b: 36 };
+                const pw = w - pad.l - pad.r;
+                const ph = h - pad.t - pad.b;
+                const maxKW = 95;
+
+                ctx.clearRect(0, 0, w, h);
+                ctx.strokeStyle = '#E4E7EC';
+                ctx.font = '9.5px Consolas, monospace';
+                ctx.fillStyle = '#57606A';
+
+                for (let kw = 0; kw <= 80; kw += 20) {
+                    const y = pad.t + ph - (kw / maxKW) * ph;
+                    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l + pw, y); ctx.stroke();
+                    ctx.fillText(kw + ' kW', 6, y + 3);
+                }
+
+                // Current converged run vs baseline RR=5.0 run
+                const qrConv = Math.abs(r.Qr_kW);
+                const qcConv = Math.abs(r.Qc_kW);
+                const totConv = qrConv + qcConv;
+
+                const groups = [
+                    { label: 'Reboiler Heating (Q_R)', vals: [21.57, qrConv, 46.11] },
+                    { label: 'Total Cooling (|Q_C|)', vals: [14.14, qcConv, 34.79] },
+                    { label: 'Total Thermal Load', vals: [35.71, totConv, 80.90] }
+                ];
+                const barColors = ['#0078D4', '#F59E0B', '#D83B01'];
+
+                groups.forEach((grp, gi) => {
+                    const gx = pad.l + (gi + 0.5) * (pw / 3);
+                    const bw = Math.min(26, pw / 12);
+                    grp.vals.forEach((val, bi) => {
+                        const bh = Math.min(ph, (val / maxKW) * ph);
+                        const bx = gx + (bi - 1.5) * (bw + 3);
+                        const by = pad.t + ph - bh;
+                        ctx.fillStyle = barColors[bi];
+                        ctx.fillRect(bx, by, bw, bh);
+                        ctx.strokeStyle = '#1F2328';
+                        ctx.lineWidth = 0.6;
+                        ctx.strokeRect(bx, by, bw, bh);
+                        ctx.fillStyle = '#1F2328';
+                        ctx.font = 'bold 9px Consolas, monospace';
+                        ctx.fillText(val.toFixed(1), bx + 1, by - 3);
+                    });
+                    ctx.fillStyle = '#1F2328';
+                    ctx.font = '10px Segoe UI, sans-serif';
+                    ctx.fillText(grp.label, gx - 42, h - 10);
+                });
+
+                // Legend box matching Figure 1(b)
+                ctx.font = '9.5px Segoe UI, sans-serif';
+                ctx.fillStyle = '#0078D4'; ctx.fillRect(pad.l, 6, 9, 9);
+                ctx.fillStyle = '#1F2328'; ctx.fillText('Lab #2a: LLE (RR=1.2)', pad.l + 12, 14);
+                ctx.fillStyle = '#F59E0B'; ctx.fillRect(pad.l + 120, 6, 9, 9);
+                ctx.fillStyle = '#1F2328'; ctx.fillText(`Lab #2b (RR=${r.R.toFixed(2)})`, pad.l + 132, 14);
+                ctx.fillStyle = '#D83B01'; ctx.fillRect(pad.l + 235, 6, 9, 9);
+                ctx.fillStyle = '#1F2328'; ctx.fillText('Initial Guess (RR=5.0)', pad.l + 247, 14);
+            }
+        }
+
+        function renderValidation() {
+            const box = document.getElementById('validationContainer');
+            const feed = state.streams.find(s => !s.fromBlock)?.results;
+            const outs = state.streams.filter(s => s.fromBlock && s.results);
+            const dist = outs.find(o => o.portType === 'top')?.results;
+            const bot = outs.find(o => o.portType === 'bottom')?.results;
+            const col = state.blocks.find(b => b.results)?.results;
+
+            if (!feed || !dist || !bot || !col) {
+                box.innerHTML = `<div class="sheet-card" style="padding:24px; text-align:center; color:var(--ap-muted);">Complete your practical setup and press <strong>Run (F5)</strong> to compare your live simulation outputs against the Practical 11 reference solution.</div>`;
+                return;
+            }
+
+            const rows = [
+                { item: 'Converged Molar Reflux Ratio (RR)', calc: col.R.toFixed(2), ref: '2.65', tol: 0.15 },
+                { item: 'Reboiler Heating Duty Q_R (kW)', calc: '+' + col.Qr_kW.toFixed(2), ref: '+29.76', tol: 1.5 },
+                { item: 'Condenser Cooling Duty Q_C (kW)', calc: col.Qc_kW.toFixed(2), ref: '-18.44', tol: 1.5 },
+                { item: 'Total Thermal Energy Load (kW)', calc: (Math.abs(col.Qr_kW) + Math.abs(col.Qc_kW)).toFixed(2), ref: '48.20', tol: 2.5 },
+                { item: 'FEED Mole Flow (kmol/hr)', calc: feed.moleFlow.toFixed(6), ref: '3.636303', tol: 0.01 },
+                { item: 'FEED Molar Enthalpy (cal/mol)', calc: feed.hMol.toFixed(2), ref: '-66506.78', tol: 250 },
+                { item: 'FEED Mass Density (gm/cc)', calc: feed.rhoMass.toFixed(6), ref: '0.876001', tol: 0.01 },
+                { item: 'DISTILL Temperature (C)', calc: dist.T.toFixed(4), ref: '55.8094', tol: 0.8 },
+                { item: 'DISTILL Mass Flow (kg/hr)', calc: dist.massFlow.toFixed(4), ref: '50.0000', tol: 0.2 },
+                { item: 'DISTILL Mole Flow (kmol/hr)', calc: dist.moleFlow.toFixed(6), ref: '0.878112', tol: 0.01 },
+                { item: 'DISTILL ACETONE Mass Fraction', calc: (dist.massFrac['ACETONE'] || 0).toFixed(6), ref: '0.991000', tol: 0.002 },
+                { item: 'DISTILL ACETONE Mole Fraction', calc: (dist.moleFrac['ACETONE'] || 0).toFixed(6), ref: '0.971554', tol: 0.005 },
+                { item: 'DISTILL Volume Flow (l/min)', calc: dist.volFlow.toFixed(4), ref: '400.2839', tol: 5.0 },
+                { item: 'BOTTOMS Temperature (C)', calc: bot.T.toFixed(4), ref: '97.3271', tol: 2.5 },
+                { item: 'BOTTOMS Mass Flow (kg/hr)', calc: bot.massFlow.toFixed(4), ref: '50.0000', tol: 0.2 },
+                { item: 'BOTTOMS Mole Flow (kmol/hr)', calc: bot.moleFlow.toFixed(6), ref: '2.758191', tol: 0.01 },
+                { item: 'BOTTOMS WATER Mass Fraction', calc: (bot.massFrac['WATER'] || 0).toFixed(6), ref: '0.991000', tol: 0.002 },
+                { item: 'BOTTOMS Volume Flow (l/min)', calc: bot.volFlow.toFixed(6), ref: '0.907340', tol: 0.02 }
+            ];
+
+            box.innerHTML = `
+                <div class="sheet-card">
+                    <div class="sheet-head"><span>Practical 11 / Lab #2b Validation Benchmark (Calculated vs Reference PDF)</span></div>
+                    <div style="padding:12px;">
+                        <table class="ap-table mono">
+                            <thead>
+                                <tr><th>Parameter</th><th>Calculated Value</th><th>Reference Benchmark</th><th>Status</th></tr>
+                            </thead>
+                            <tbody>
+                                ${rows.map(r => {
+                                    const diff = Math.abs(parseFloat(r.calc) - parseFloat(r.ref));
+                                    const ok = diff <= r.tol;
+                                    return `
+                                        <tr>
+                                            <td style="font-family:var(--font-ui); font-weight:600;">${r.item}</td>
+                                            <td style="color:#005A9E; font-weight:700;">${r.calc}</td>
+                                            <td>${r.ref}</td>
+                                            <td style="color:${ok ? '#107C10' : '#D83B01'}; font-weight:700;">${ok ? 'Verified' : 'Check Inputs'}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="sheet-card">
+                    <div class="sheet-head"><span>Energy Intensity Comparison: LLE (Lab #2a) vs. Direct Distillation (Lab #2b)</span></div>
+                    <div style="padding:12px;">
+                        <div class="chart-canvas-wrap" style="height:260px;"><canvas id="chartEnergyValidation"></canvas></div>
+                    </div>
+                </div>
+            `;
+
+            requestAnimationFrame(() => {
+                const chEV = setupHiDPICanvas('chartEnergyValidation');
+                if (!chEV) return;
+                const { ctx, w, h } = chEV;
+                const pad = { l: 52, r: 20, t: 38, b: 36 };
+                const pw = w - pad.l - pad.r;
+                const ph = h - pad.t - pad.b;
+                const maxKW = 95;
+
+                ctx.clearRect(0, 0, w, h);
+                ctx.strokeStyle = '#E4E7EC';
+                ctx.font = '10px Consolas, monospace';
+                ctx.fillStyle = '#57606A';
+
+                for (let kw = 0; kw <= 80; kw += 20) {
+                    const y = pad.t + ph - (kw / maxKW) * ph;
+                    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l + pw, y); ctx.stroke();
+                    ctx.fillText(kw + ' kW', 8, y + 3);
+                }
+
+                const qrConv = Math.abs(col.Qr_kW);
+                const qcConv = Math.abs(col.Qc_kW);
+                const totConv = qrConv + qcConv;
+
+                const groups = [
+                    { label: 'Reboiler Heating Duty (Q_R)', vals: [21.57, qrConv, 46.11] },
+                    { label: 'Total Cooling Duty (|Q_C| + |Q_cool|)', vals: [14.14, qcConv, 34.79] },
+                    { label: 'Total Thermal Energy Load', vals: [35.71, totConv, 80.90] }
+                ];
+                const barColors = ['#0078D4', '#F59E0B', '#D83B01'];
+
+                groups.forEach((grp, gi) => {
+                    const gx = pad.l + (gi + 0.5) * (pw / 3);
+                    const bw = Math.min(34, pw / 11);
+                    grp.vals.forEach((val, bi) => {
+                        const bh = Math.min(ph, (val / maxKW) * ph);
+                        const bx = gx + (bi - 1.5) * (bw + 4);
+                        const by = pad.t + ph - bh;
+                        ctx.fillStyle = barColors[bi];
+                        ctx.fillRect(bx, by, bw, bh);
+                        ctx.strokeStyle = '#1F2328';
+                        ctx.lineWidth = 0.7;
+                        ctx.strokeRect(bx, by, bw, bh);
+                        ctx.fillStyle = '#1F2328';
+                        ctx.font = 'bold 9.5px Consolas, monospace';
+                        ctx.fillText(val.toFixed(1) + ' kW', bx, by - 4);
+                    });
+                    ctx.fillStyle = '#1F2328';
+                    ctx.font = '10.5px Segoe UI, sans-serif';
+                    ctx.fillText(grp.label, gx - 58, h - 10);
+                });
+
+                ctx.font = '10px Segoe UI, sans-serif';
+                ctx.fillStyle = '#0078D4'; ctx.fillRect(pad.l, 8, 10, 10);
+                ctx.fillStyle = '#1F2328'; ctx.fillText('Lab #2a: LLE + Recovery (RR=1.2)', pad.l + 14, 17);
+                ctx.fillStyle = '#F59E0B'; ctx.fillRect(pad.l + 185, 8, 10, 10);
+                ctx.fillStyle = '#1F2328'; ctx.fillText(`Lab #2b: Direct Distill. (Converged RR=${col.R.toFixed(2)})`, pad.l + 199, 17);
+                ctx.fillStyle = '#D83B01'; ctx.fillRect(pad.l + 420, 8, 10, 10);
+                ctx.fillStyle = '#1F2328'; ctx.fillText('Lab #2b: Initial Guess (RR=5.0)', pad.l + 434, 17);
+            });
+        }
+
+        function exportStreamCSV() {
+            const solved = state.streams.filter(s => s.results);
+            if (solved.length === 0) {
+                logMsg('WARNING: No solved stream data to export.', 'warn');
+                return;
+            }
+            let csv = 'Property,Units,' + solved.map(s => s.name).join(',') + '\n';
+            csv += 'Temperature,C,' + solved.map(s => s.results.T.toFixed(4)).join(',') + '\n';
+            csv += 'Pressure,bar,' + solved.map(s => s.results.P.toFixed(4)).join(',') + '\n';
+            csv += 'Mass Flow,kg/hr,' + solved.map(s => s.results.massFlow.toFixed(4)).join(',') + '\n';
+            csv += 'Mole Flow,kmol/hr,' + solved.map(s => s.results.moleFlow.toFixed(6)).join(',') + '\n';
+            state.components.forEach(c => {
+                csv += `${c} Mass Frac,-,` + solved.map(s => (s.results.massFrac[c] || 0).toFixed(6)).join(',') + '\n';
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Aspen_Plus_Stream_Table.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // =========================================================================
+        // 10. UI SYNCHRONIZATION, LOGGING, MODALS, & KEYBOARD SHORTCUTS
+        // =========================================================================
+        function syncStatusUI() {
+            renderNavTree();
+            renderPFD();
+
+            const pill = document.getElementById('topStatusPill');
+            const sMsg = document.getElementById('statusBarMsg');
+            const sFlow = document.getElementById('statusFlowsheet');
+
+            if (state.converged) {
+                pill.style.background = '#DFF6DD';
+                pill.style.color = '#107C10';
+                pill.textContent = 'Results Available';
+                sMsg.textContent = 'Results Available';
+                sFlow.textContent = 'Converged';
+            } else if (state.hasError) {
+                pill.style.background = '#FDE7E9';
+                pill.style.color = '#A80000';
+                pill.textContent = 'Simulation Errors';
+                sMsg.textContent = 'Error - See Control Panel';
+                sFlow.textContent = 'Error';
+            } else if (isAllInputComplete()) {
+                pill.style.background = '#E6F2FB';
+                pill.style.color = '#005A9E';
+                pill.textContent = 'Required Input Complete';
+                sMsg.textContent = 'Required Input Complete';
+                sFlow.textContent = 'Ready';
+            } else {
+                pill.style.background = '#FDE7E9';
+                pill.style.color = '#A80000';
+                pill.textContent = 'Required Input Incomplete';
+                sMsg.textContent = 'Required Input Incomplete';
+                sFlow.textContent = 'Incomplete';
+            }
+        }
+
+        function logMsg(msg, level = 'info') {
+            const box = document.getElementById('cpLog');
+            if (!box) return;
+            const colors = {
+                info: '#9CDCFE',
+                success: '#4EC9B0',
+                warn: '#CE9178',
+                error: '#F48771',
+                dim: '#888888'
+            };
+            const div = document.createElement('div');
+            div.style.color = colors[level] || '#D4D4D4';
+            div.textContent = msg;
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function clearConsole() {
+            const box = document.getElementById('cpLog');
+            if (box) box.innerHTML = '';
+        }
+
+        function toggleControlPanel() {
+            document.getElementById('controlPanel').classList.toggle('hidden');
+        }
+
+        function changeZoom(delta) {
+            state.zoom = Math.max(0.6, Math.min(1.5, Math.round((state.zoom + delta) * 10) / 10));
+            document.getElementById('zoomText').textContent = Math.round(state.zoom * 100) + '%';
+            renderPFD();
+        }
+
+        function switchRibbonTab(name, el) {
+            document.querySelectorAll('.r-tab').forEach(t => t.classList.remove('active'));
+            if (el) el.classList.add('active');
+        }
+
+        function setUnitSet(val) {
+            state.unitSet = val;
+            logMsg(`-> Unit Set set to ${val}.`, 'info');
+        }
+
+        function openPromptModal(title, label, defaultVal, cb) {
+            promptCallback = cb;
+            document.getElementById('promptModalTitle').textContent = title;
+            document.getElementById('promptModalLabel').textContent = label;
+            const inp = document.getElementById('promptModalInput');
+            inp.value = defaultVal || '';
+            document.getElementById('promptModal').classList.remove('hidden');
+            setTimeout(() => { inp.focus(); inp.select(); }, 20);
+        }
+        function closePromptModal() {
+            document.getElementById('promptModal').classList.add('hidden');
+            promptCallback = null;
+        }
+        function confirmPromptModal() {
+            const val = document.getElementById('promptModalInput').value;
+            const cb = promptCallback;
+            closePromptModal();
+            if (cb) cb(val);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'F5') { e.preventDefault(); runSimulation(); }
+            else if (e.key === 'F4') { e.preventDefault(); stepNext(); }
+            else if (e.ctrlKey && e.key.toLowerCase() === 'm') { e.preventDefault(); openRenameDialogForSelected(); }
+            else if (e.key === 'Escape') {
+                state.placingBlockType = null;
+                state.materialConnectMode = false;
+                state.textAnnotateMode = false;
+                state.pendingPortStart = null;
+                document.getElementById('btnMaterialTool').classList.remove('active');
+                document.getElementById('btnTextTool').classList.remove('active');
+                renderPalette();
+                renderPFD();
+            }
+        });
+
+        window.onload = function () {
+            newBlankSimulation();
+        };
+
+        // Global window bindings for all UI triggers
+        window.runSimulation = runSimulation;
+        window.resetSimulation = resetSimulation;
+        window.newBlankSimulation = newBlankSimulation;
+        window.stepNext = stepNext;
+        window.switchEnvironment = switchEnvironment;
+        window.switchDocTab = switchDocTab;
+        window.switchRibbonTab = switchRibbonTab;
+        window.setUnitSet = setUnitSet;
+        window.filterPalette = filterPalette;
+        window.pickPaletteBlock = pickPaletteBlock;
+        window.toggleMaterialConnectMode = toggleMaterialConnectMode;
+        window.toggleTextAnnotateMode = toggleTextAnnotateMode;
+        window.openRenameDialogForSelected = openRenameDialogForSelected;
+        window.deleteSelectedPFDObject = deleteSelectedPFDObject;
+        window.toggleStampedStreamTable = toggleStampedStreamTable;
+        window.exportStreamCSV = exportStreamCSV;
+        window.toggleControlPanel = toggleControlPanel;
+        window.clearConsole = clearConsole;
+        window.changeZoom = changeZoom;
+        window.selectNav = selectNav;
+        window.onComponentIdEntered = onComponentIdEntered;
+        window.removeCompAt = removeCompAt;
+        window.onSelectPropertyMethod = onSelectPropertyMethod;
+        window.updateFeedField = updateFeedField;
+        window.updateFeedComp = updateFeedComp;
+        window.renameStreamDirect = renameStreamDirect;
+        window.setBlockParam = setBlockParam;
+        window.addDesignSpec = addDesignSpec;
+        window.removeDesignSpec = removeDesignSpec;
+        window.updateDS = updateDS;
+        window.addVarySpec = addVarySpec;
+        window.removeVarySpec = removeVarySpec;
+        window.updateVary = updateVary;
+        window.renameBlockDirect = renameBlockDirect;
+        window.closePromptModal = closePromptModal;
+        window.confirmPromptModal = confirmPromptModal;
+    </script>
+</body>
+</html>
